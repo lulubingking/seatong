@@ -1,0 +1,6 @@
+{
+  "test_acc": 0.995977,
+  "test_macro_f1": 0.969403,
+  "test_weighted_f1": 0.995845,
+  "gate_pass": true
+}

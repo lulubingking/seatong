@@ -1,0 +1,111 @@
+# ============================================================
+# 海瞳鱼鉴 SeaPupil · .gitignore
+# ============================================================
+
+# ---------- 数据集（体积过大，不随仓库分发） ----------
+# 27,324 张 PNG / 约 501 MB。获取方式见 README「数据集准备」。
+fish_image23/
+data/raw/
+*.zip
+*.tar.gz
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# ---------- 模型权重 ----------
+# 【保留】ml/models/M1_ood_tuned/best.pt      生产模型（42.8 MB）
+# 【保留】ml/models/M1_main_224/best.pt       回滚基线（42.8 MB）
+# 其余实验产物体积大且可复现，不上传。
+ml/models/M1_main_224_dynamic_int8/model.pt
+ml/models/M1_main_224_static_int8/state_dict.pt
+ml/models/M1_main_224_static_int8/*.pt
+ml/models/M1_main_224_pruned30_ft/best.pt
+*.ckpt
+
+# ---------- 数据库 / 运行时产物 ----------
+backend/data/*.db
+backend/data/*.db-shm
+backend/data/*.db-wal
+backend/data/*.bak*
+backend/storage/
+backend/logs/*.log
+*.sqlite3
+*.sqlite3-journal
+
+# ---------- 前端 ----------
+node_modules/
+frontend/dist/
+frontend/.verify/
+frontend/build_out.txt*
+*.tsbuildinfo
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 环境变量（含密钥，绝不入库） ----------
+.env
+.env.local
+.env.*.local
+backend/.env
+!backend/.env.example
+!frontend/.env.development
+!frontend/.env.production
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---------- OOD 实验图片 ----------
+# 【保留】ml/ood_web/fish_*    93 张网图冻结基准（复现 OOD 82.80% 指标所需）
+# 【排除】ml/ood_web_tune/fish_*   307 张微调池（54 MB，可用 collect_tune_pool.py 重新采集）
+ml/ood_web_tune/fish_*/
+
+# ---------- 临时文件 ----------
+*.tmp
+*.temp
+*.log
+scratch/
+tmp/

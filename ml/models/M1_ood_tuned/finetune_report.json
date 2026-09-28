@@ -1,0 +1,64 @@
+{
+  "baseline": {
+    "val": {
+      "acc": 0.997074,
+      "macro_f1": 0.975185
+    },
+    "ood_top1": 0.3226,
+    "ood_top5": 0.6344
+  },
+  "config": {
+    "epochs": 4,
+    "lr_head": 0.0001,
+    "lr_backbone": 1e-05,
+    "web_images": 307,
+    "gate_pp": 0.01
+  },
+  "trajectory": [
+    {
+      "epoch": 1,
+      "train_loss": 0.707,
+      "val_acc": 0.99744,
+      "val_macro_f1": 0.974174,
+      "ood_top1": 0.6129,
+      "ood_top5": 0.8817,
+      "ood_mean_conf": 0.4403,
+      "gate_pass": true,
+      "seconds": 162
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.6645,
+      "val_acc": 0.99744,
+      "val_macro_f1": 0.975147,
+      "ood_top1": 0.7312,
+      "ood_top5": 0.914,
+      "ood_mean_conf": 0.5712,
+      "gate_pass": true,
+      "seconds": 115
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.6491,
+      "val_acc": 0.997805,
+      "val_macro_f1": 0.975225,
+      "ood_top1": 0.7957,
+      "ood_top5": 0.9355,
+      "ood_mean_conf": 0.6452,
+      "gate_pass": true,
+      "seconds": 126
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.6412,
+      "val_acc": 0.99744,
+      "val_macro_f1": 0.975147,
+      "ood_top1": 0.828,
+      "ood_top5": 0.957,
+      "ood_mean_conf": 0.68,
+      "gate_pass": true,
+      "seconds": 116
+    }
+  ],
+  "picked_epoch": 4
+}

@@ -1,0 +1,19 @@
+/* 全局样式入口。
+ *
+ * 【顺序为什么必须是这样】
+ * PostCSS 要求所有 `@import` 出现在其他规则之前，否则 Vite 会警告
+ * 「@import must precede all other statements」并可能把 base.css 提到
+ * @tailwind utilities 之前，导致重置样式覆盖不了工具类 —— 所以两个 @import
+ * 必须相邻置顶。
+ *
+ * 【为什么 base.css 要在 tailwind 之后生效】
+ * 靠 @layer 控制优先级而不是靠物理顺序：base.css 内部把重置规则放进
+ * `@layer base`，Tailwind 的 utilities 层天然高于 base 层，因此即使文件
+ * 被提前导入，工具类仍能覆盖重置样式。
+ */
+@import './tokens.css';
+@import './base.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

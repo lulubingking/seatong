@@ -1,0 +1,2908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海瞳鱼鉴 SeaPupil · 产品原型 · 基于 CNN 的海洋鱼类图像分类系统</title>
+<style>
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#FAFBFC; --surface-3:#F1F3F7;
+  --border:#E3E7ED; --border-strong:#CFD6E0;
+  --text:#0F172A; --text-2:#475569; --text-3:#64748B;
+  --primary:#0E7C86; --primary-600:#0B626A; --primary-50:#E7F5F6; --primary-100:#C7E8EB;
+  --ink:#062B2F;
+  --accent:#185FA5; --accent-50:#E6F1FB;
+  --warn:#B45309; --warn-50:#FAEEDA; --warn-border:#FAC775;
+  --danger:#B42318; --danger-50:#FCEBEB; --danger-border:#F09595;
+  --success:#15803D; --success-50:#EAF3DE; --success-border:#C0DD97;
+  --metric:#64748B; --metric-deep:#475569;
+  --radius-sm:8px; --radius:10px; --radius-lg:14px;
+  --ring:0 0 0 3px rgba(14,124,134,.22);
+  --font:-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "Segoe UI", Roboto, sans-serif;
+  --mono:ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;
+     -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;overflow-x:hidden;}
+a{color:var(--primary-600);text-decoration:none;}
+a:hover{text-decoration:underline;}
+svg{display:block;}
+.ic{width:18px;height:18px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.9;
+    stroke-linecap:round;stroke-linejoin:round;}
+.ic-sm{width:15px;height:15px;}
+.ic-lg{width:22px;height:22px;}
+
+/* ---------- 顶栏 ---------- */
+.topbar{position:sticky;top:0;z-index:60;background:var(--surface);border-bottom:1px solid var(--border);}
+.topbar-in{max-width:1440px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px;
+           flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--primary);display:flex;
+            align-items:center;justify-content:center;color:#fff;flex:0 0 auto;}
+.brand-txt b{display:block;font-size:15px;font-weight:600;letter-spacing:.3px;line-height:1.25;}
+.brand-txt span{display:block;font-size:11px;color:var(--text-3);letter-spacing:.6px;line-height:1.2;}
+.topnav{display:flex;gap:4px;margin-left:12px;flex:1;flex-wrap:wrap;min-width:0;}
+.topnav a{padding:9px 13px;border-radius:var(--radius-sm);color:var(--text-2);font-size:13.5px;
+          min-height:44px;display:flex;align-items:center;transition:background .18s,color .18s;cursor:pointer;}
+.topnav a:hover{background:var(--surface-3);color:var(--text);text-decoration:none;}
+.topnav a.on{background:var(--primary-50);color:var(--primary-600);font-weight:600;}
+.topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+@media (max-width:767px){
+  .topbar-in{gap:10px;padding:8px 14px;}
+  .topnav{order:3;flex-basis:100%;margin-left:0;gap:2px;}
+  .topnav a{padding:8px 10px;font-size:13px;}
+  .topright{margin-left:auto;gap:6px;}
+}
+
+/* ---------- 按钮 ---------- */
+.btn{min-height:44px;padding:0 16px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+     background:var(--surface);color:var(--text);font-family:var(--font);font-size:13.5px;font-weight:500;
+     display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;
+     transition:background .18s,border-color .18s,color .18s;}
+.btn:hover{background:var(--surface-3);border-color:#B6BFCC;}
+.btn:focus-visible{outline:none;box-shadow:var(--ring);}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-600);border-color:var(--primary-600);}
+.btn-sm{min-height:34px;padding:0 11px;font-size:12.5px;gap:5px;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-2);}
+.btn-ghost:hover{background:var(--surface-3);color:var(--text);}
+.btn-danger{color:var(--danger);border-color:#E9C4C1;}
+.btn-danger:hover{background:var(--danger-50);border-color:var(--danger-border);}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;background:var(--surface-3);
+     border-color:var(--border);color:var(--text-3);}
+.btn[disabled]:hover{background:var(--surface-3);}
+.btn-block{width:100%;}
+.btn-loading{pointer-events:none;opacity:.75;}
+
+/* ---------- 布局 ---------- */
+.shell{max-width:1440px;margin:0 auto;padding:22px 20px 64px;}
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
+@media (min-width:1025px){ .split{grid-template-columns:minmax(0,5fr) minmax(0,7fr);} }
+.split-wide{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;}
+@media (min-width:1025px){ .split-wide{grid-template-columns:minmax(0,6fr) minmax(0,6fr);} }
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.thumbs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+@media (min-width:768px){ .thumbs{grid-template-columns:repeat(3,minmax(0,1fr));} }
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt16{margin-top:16px;}.mt24{margin-top:24px;}
+.mb0{margin-bottom:0;}.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}
+.muted{color:var(--text-3);font-size:12.5px;}
+.muted-2{color:var(--text-2);font-size:13px;}
+.num{font-variant-numeric:tabular-nums;}
+
+/* ---------- 卡片 ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;}
+.card-tight{padding:14px 16px;}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.card-h h3{margin:0;font-size:15px;font-weight:600;}
+.card-h .sub{font-size:12.5px;color:var(--text-3);margin:3px 0 0;}
+.sec-title{font-size:15px;font-weight:600;margin:0 0 3px;}
+.sec-sub{font-size:12.5px;color:var(--text-3);margin:0 0 14px;}
+
+/* ---------- 页面头 ---------- */
+.view-title{font-size:22px;font-weight:600;margin:0 0 6px;letter-spacing:.2px;line-height:1.3;}
+.view-sub{font-size:13px;color:var(--text-2);margin:0 0 18px;max-width:70ch;}
+
+/* ---------- 上传区 ---------- */
+.drop{border:2px dashed var(--border-strong);border-radius:var(--radius-lg);background:var(--surface-2);
+      padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+      min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.drop:hover{border-color:var(--primary);background:var(--primary-50);}
+.drop.hot{border-color:var(--primary);background:var(--primary-50);border-style:solid;}
+.drop-ic{width:52px;height:52px;border-radius:14px;background:var(--primary-50);color:var(--primary);
+         display:flex;align-items:center;justify-content:center;border:1px solid var(--primary-100);}
+.drop b{font-size:15px;font-weight:600;}
+.drop .hint{font-size:12.5px;color:var(--text-3);}
+.rule{background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius-sm);
+      padding:8px 12px;font-size:12.5px;color:var(--text-2);display:flex;gap:8px;align-items:flex-start;}
+.rule code{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border);
+           border-radius:4px;padding:0 4px;}
+
+/* ---------- 缩略图 ---------- */
+.thumb{position:relative;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+       background:var(--surface-3);}
+.thumb img{width:100%;height:112px;object-fit:cover;display:block;}
+.thumb .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:8px;border:none;
+            background:rgba(15,23,42,.72);color:#fff;display:flex;align-items:center;justify-content:center;
+            cursor:pointer;padding:0;}
+.thumb .del:hover{background:var(--danger);}
+.thumb .nm{font-size:11.5px;color:var(--text-2);padding:6px 8px;background:var(--surface);
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border);}
+.thumb .bad{position:absolute;left:0;right:0;bottom:0;background:var(--danger-50);color:var(--danger);
+            font-size:11px;padding:4px 8px;border-top:1px solid var(--danger-border);}
+.thumb.err img{filter:grayscale(1);opacity:.45;}
+
+/* ---------- 标签 ---------- */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;line-height:1;padding:4px 8px;
+     border-radius:999px;border:1px solid var(--border);background:var(--surface-3);color:var(--text-2);
+     white-space:nowrap;}
+.tag-primary{background:var(--primary-50);border-color:var(--primary-100);color:var(--primary-600);}
+.tag-warn{background:var(--warn-50);border-color:var(--warn-border);color:var(--warn);}
+.tag-danger{background:var(--danger-50);border-color:var(--danger-border);color:var(--danger);}
+.tag-success{background:var(--success-50);border-color:var(--success-border);color:var(--success);}
+.tag-info{background:var(--accent-50);border-color:#B5D4F4;color:var(--accent);}
+.tag-on{background:var(--success-50);border-color:var(--success-border);color:var(--success);}
+.tag-off{background:var(--surface-3);border-color:var(--border-strong);color:var(--text-3);}
+
+/* ---------- 提示条 ---------- */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:var(--radius);
+       font-size:13px;border:1px solid var(--border);background:var(--surface-3);color:var(--text-2);}
+.alert b{font-weight:600;}
+.alert-warn{background:var(--warn-50);border-color:var(--warn-border);color:#7A3D06;}
+.alert-danger{background:var(--danger-50);border-color:var(--danger-border);color:#8C1D14;}
+.alert-success{background:var(--success-50);border-color:var(--success-border);color:#14532D;}
+.alert-info{background:var(--accent-50);border-color:#B5D4F4;color:#0C447C;}
+.alert .ic{margin-top:1px;}
+
+/* ---------- 表单 ---------- */
+.field{margin-bottom:14px;}
+.field > label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text);}
+.field .req{color:var(--danger);margin-left:2px;}
+.inp,select.inp,textarea.inp{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--border-strong);
+     border-radius:var(--radius-sm);background:var(--surface);font-family:var(--font);font-size:14px;
+     color:var(--text);transition:border-color .18s,box-shadow .18s;}
+textarea.inp{min-height:74px;resize:vertical;line-height:1.6;}
+.inp:focus{outline:none;border-color:var(--primary);box-shadow:var(--ring);}
+.inp[readonly],.inp[disabled]{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
+.inp.err{border-color:var(--danger);}
+select.inp{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:16px;padding-right:34px;}
+.f-hint{font-size:12px;color:var(--text-3);margin-top:5px;}
+.f-err{font-size:12.5px;color:var(--danger);margin-top:5px;display:flex;gap:5px;align-items:flex-start;}
+.f-ok{font-size:12.5px;color:var(--success);margin-top:5px;display:flex;gap:5px;align-items:center;}
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;}
+.switch .track{width:46px;height:26px;border-radius:999px;background:var(--border-strong);position:relative;
+               transition:background .2s;flex:0 0 auto;}
+.switch .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;
+              transition:transform .2s;box-shadow:0 1px 2px rgba(15,23,42,.22);}
+.switch.on .track{background:var(--primary);}
+.switch.on .knob{transform:translateX(20px);}
+.checkbox{width:17px;height:17px;border:1.5px solid var(--border-strong);border-radius:5px;background:var(--surface);
+          cursor:pointer;flex:0 0 auto;appearance:none;margin:0;transition:background .15s,border-color .15s;}
+.checkbox:checked{background:var(--primary);border-color:var(--primary);
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;background-size:12px;}
+.checkbox:focus-visible{outline:none;box-shadow:var(--ring);}
+.pwd-meter{height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden;margin-top:7px;}
+.pwd-meter i{display:block;height:100%;transition:width .25s,background .25s;}
+.rules-list{list-style:none;padding:0;margin:8px 0 0;}
+.rules-list li{font-size:12px;color:var(--text-3);display:flex;gap:6px;align-items:center;padding:2px 0;}
+.rules-list li.ok{color:var(--success);}
+
+/* ---------- 表格 ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+table.tbl th{text-align:left;font-weight:600;font-size:12.5px;color:var(--text-2);padding:11px 12px;
+             background:var(--surface-3);border-bottom:1px solid var(--border);white-space:nowrap;}
+table.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.tbl tbody tr:last-child td{border-bottom:none;}
+table.tbl tbody tr.clickable{cursor:pointer;transition:background .15s;}
+table.tbl tbody tr.clickable:hover{background:var(--surface-2);}
+table.tbl td.tnum{font-variant-numeric:tabular-nums;}
+.cell-thumb{width:52px;height:40px;border-radius:6px;object-fit:cover;background:var(--surface-3);
+            display:block;border:1px solid var(--border);}
+.cell-name{font-weight:500;display:flex;align-items:center;gap:6px;}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;}
+.pager .pgs{display:flex;gap:5px;align-items:center;}
+.pg{min-width:34px;height:34px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);
+    font-size:13px;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    padding:0 8px;font-family:var(--font);transition:background .16s,color .16s,border-color .16s;}
+.pg:hover{background:var(--surface-3);color:var(--text);}
+.pg.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+.pg[disabled]{opacity:.4;cursor:not-allowed;}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto;}
+.tab{padding:10px 15px;border:none;background:transparent;font-family:var(--font);font-size:13.5px;
+     color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;min-height:44px;
+     white-space:nowrap;transition:color .16s,border-color .16s;}
+.tab:hover{color:var(--text);}
+.tab.on{color:var(--primary-600);border-bottom-color:var(--primary);font-weight:600;}
+
+/* ---------- 条形图（Top-5） ---------- */
+.bars{display:flex;flex-direction:column;gap:11px;}
+.bar-row{display:grid;grid-template-columns:minmax(90px,132px) minmax(0,1fr) 62px;gap:10px;align-items:center;}
+.bar-name{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-name b{font-weight:600;color:var(--text);}
+.bar-track{height:20px;background:var(--surface-3);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;background:var(--metric);transition:width .45s ease;}
+.bar-top .bar-fill{background:var(--primary);}
+.bar-top .bar-name{font-weight:600;color:var(--text);}
+.bar-pct{font-size:13px;font-weight:500;text-align:right;color:var(--text-2);font-variant-numeric:tabular-nums;}
+.bar-top .bar-pct{color:var(--primary-600);font-weight:600;}
+@media (max-width:767px){
+  .bar-row{grid-template-columns:minmax(76px,100px) minmax(0,1fr) 54px;gap:8px;}
+  .bar-name,.bar-pct{font-size:12px;}
+}
+
+/* ---------- 结果区 ---------- */
+.result-hero{background:linear-gradient(0deg,var(--primary-50),var(--primary-50));
+       border:1px solid var(--primary-100);border-radius:var(--radius-lg);padding:18px 20px;}
+.result-hero .lead{font-size:12px;color:var(--primary-600);letter-spacing:.8px;font-weight:600;}
+.result-hero h2{margin:6px 0 2px;font-size:26px;font-weight:600;letter-spacing:.3px;}
+.result-hero .latin{font-style:italic;color:var(--text-2);font-size:14px;}
+.result-hero .conf{margin-top:14px;display:flex;align-items:baseline;gap:8px;}
+.result-hero .conf b{font-size:40px;font-weight:600;line-height:1;color:var(--primary-600);
+                     font-variant-numeric:tabular-nums;}
+.result-hero .conf span{font-size:13px;color:var(--text-2);}
+.orig-img{width:100%;max-height:480px;object-fit:contain;border-radius:var(--radius);border:1px solid var(--border);
+          background:var(--surface-3);display:block;}
+.img-ph{width:100%;min-height:230px;border-radius:var(--radius);border:1px dashed var(--border-strong);
+        background:var(--surface-3);display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:8px;color:var(--text-3);font-size:12.5px;text-align:center;padding:16px;}
+.disclaimer{border:1px solid var(--border);background:var(--surface-3);border-radius:var(--radius);
+    padding:11px 13px;font-size:12px;line-height:1.65;color:var(--text-2);display:flex;gap:9px;align-items:flex-start;}
+.disclaimer b{color:var(--text);font-weight:600;}
+.fold{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;}
+.fold-h{width:100%;text-align:left;background:var(--surface-2);border:none;padding:11px 13px;font-family:var(--font);
+        font-size:13.5px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;
+        justify-content:space-between;gap:10px;min-height:44px;}
+.fold-h:hover{background:var(--surface-3);}
+.fold-b{padding:13px;font-size:13px;line-height:1.75;color:var(--text-2);max-height:230px;overflow-y:auto;
+        border-top:1px solid var(--border);background:var(--surface);}
+.fold-b p{margin:0 0 9px;}
+.fold-b p:last-child{margin-bottom:0;}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;}
+.meta-item{background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;}
+.meta-item .k{font-size:11.5px;color:var(--text-3);}
+.meta-item .v{font-size:13.5px;font-weight:500;margin-top:2px;word-break:break-all;}
+
+/* ---------- 统计卡 ---------- */
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;}
+.stat .k{font-size:12.5px;color:var(--text-3);}
+.stat .v{font-size:26px;font-weight:600;line-height:1.25;margin-top:3px;letter-spacing:.3px;}
+.stat .x{font-size:12px;color:var(--text-3);margin-top:2px;}
+
+/* ---------- 阶段指示 ---------- */
+.stages{display:flex;align-items:center;gap:0;flex-wrap:wrap;}
+.stage{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-3);}
+.stage .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-strong);background:var(--surface);
+            display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-3);flex:0 0 auto;}
+.stage.done .dot{background:var(--primary);border-color:var(--primary);color:#fff;}
+.stage.done{color:var(--text-2);}
+.stage.cur .dot{border-color:var(--primary);color:var(--primary-600);font-weight:600;}
+.stage.cur{color:var(--primary-600);font-weight:600;}
+.stage-line{width:26px;height:1.5px;background:var(--border-strong);margin:0 8px;flex:0 0 auto;}
+.stage.done + .stage-line{background:var(--primary-100);}
+.skeleton{background:var(--surface-3);border-radius:var(--radius);animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* ---------- 追溯条 ---------- */
+.trace{margin-top:26px;border:1px dashed var(--border-strong);border-radius:var(--radius);
+       background:var(--surface-2);padding:11px 14px;}
+.trace > b{font-size:12px;color:var(--text-2);display:block;margin-bottom:7px;letter-spacing:.3px;}
+.trace .codes{display:flex;flex-wrap:wrap;gap:5px;}
+.trace code{font-family:var(--mono);font-size:11.5px;background:var(--surface);border:1px solid var(--border);
+            border-radius:5px;padding:2px 6px;color:var(--primary-600);}
+.trace .note{font-size:11.5px;color:var(--text-3);margin-top:8px;line-height:1.6;}
+
+/* ---------- 弹窗 ---------- */
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.46);z-index:200;display:flex;align-items:center;
+      justify-content:center;padding:20px;overflow-y:auto;}
+.dlg{background:var(--surface);border-radius:var(--radius-lg);max-width:640px;width:100%;max-height:88vh;
+     overflow-y:auto;border:1px solid var(--border);}
+.dlg.wide{max-width:880px;}
+.dlg.slim{max-width:440px;}
+.dlg-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+       justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--surface);z-index:2;}
+.dlg-h h3{margin:0;font-size:16px;font-weight:600;}
+.dlg-b{padding:18px 20px;font-size:13.5px;line-height:1.7;}
+.dlg-f{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px;
+       flex-wrap:wrap;position:sticky;bottom:0;background:var(--surface);}
+.icon-btn{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;
+          color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.icon-btn:hover{background:var(--surface-3);color:var(--text);}
+
+/* ---------- Toast ---------- */
+#toast-root{position:fixed;right:18px;bottom:18px;z-index:300;display:flex;flex-direction:column;gap:9px;
+            max-width:340px;}
+.toast{background:var(--surface);border:1px solid var(--border-strong);border-left:3px solid var(--primary);
+       border-radius:var(--radius);padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:9px;
+       align-items:flex-start;box-shadow:0 4px 14px rgba(15,23,42,.09);}
+.toast.warn{border-left-color:var(--warn);}
+.toast.err{border-left-color:var(--danger);}
+.toast.ok{border-left-color:var(--success);}
+.toast .ic{margin-top:1px;flex:0 0 auto;}
+
+/* ---------- 抽屉 ---------- */
+.side-back{display:none;}
+@media (max-width:1024px){
+  .side-back{display:none;}
+}
+
+/* ---------- 步骤条 / 其他 ---------- */
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--border);
+    font-size:13px;}
+.kv:last-child{border-bottom:none;}
+.kv .k{color:var(--text-3);}
+.kv .v{font-weight:500;text-align:right;}
+.compare-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;}
+.compare-card .hd{padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface-2);
+                  font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.compare-card img{width:100%;height:150px;object-fit:cover;background:var(--surface-3);display:block;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:34px 26px;}
+.hero h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:.3px;line-height:1.35;}
+.hero .lead{font-size:14.5px;color:var(--text-2);max-width:62ch;margin:0 0 20px;}
+.flow-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--text-2);}
+.flow-line .step{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 12px;
+                 display:inline-flex;gap:6px;align-items:center;}
+.sp-ic{width:26px;height:26px;border-radius:50%;background:var(--primary-50);color:var(--primary-600);
+       display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;font-weight:600;}
+.sp-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--border);}
+.sp-item:last-child{border-bottom:none;}
+.sp-item .nm{font-size:13px;font-weight:500;}
+.sp-item .lt{font-size:11.5px;color:var(--text-3);font-style:italic;}
+.progress{height:7px;border-radius:4px;background:var(--surface-3);overflow:hidden;}
+.progress i{display:block;height:100%;background:var(--primary);transition:width .3s;}
+.empty{text-align:center;padding:52px 20px;color:var(--text-3);}
+.empty .ic-lg{margin:0 auto 12px;color:var(--border-strong);width:44px;height:44px;}
+.empty b{display:block;font-size:15px;color:var(--text-2);font-weight:600;margin-bottom:5px;}
+.empty p{font-size:13px;margin:0 0 16px;}
+.tip-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-3);}
+.bulkbar{background:var(--ink);color:#fff;border-radius:var(--radius);padding:9px 14px;display:flex;
+         align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;}
+.bulkbar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);color:#fff;min-height:34px;
+              padding:0 11px;font-size:12.5px;}
+.bulkbar .btn:hover{background:rgba(255,255,255,.2);}
+.bulkbar .btn-danger{color:#FCA5A5;border-color:rgba(252,165,165,.4);}
+.bulkbar .btn-danger:hover{background:rgba(252,165,165,.16);}
+.two-col-list{columns:2;column-gap:20px;font-size:13px;color:var(--text-2);}
+@media (max-width:600px){ .two-col-list{columns:1;} }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;}
+}
+</style>
+</head>
+<body>
+<a class="sr-only" href="#app">跳到主内容</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand" data-act="go" data-route="home" role="button" tabindex="0" aria-label="返回首页">
+      <span class="brand-mark" data-ic="fish" data-size="lg"></span>
+      <span class="brand-txt"><b>海瞳鱼鉴</b><span>SEAPUPIL</span></span>
+    </div>
+    <nav class="topnav" id="topnav" aria-label="主导航"></nav>
+    <div class="topright" id="topright"></div>
+  </div>
+</header>
+<main id="app" class="shell"></main>
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite" aria-atomic="false"></div>
+<script>
+/* ============================================================
+   海瞳鱼鉴 SeaPupil · 单文件高保真交互原型
+   依据《海瞳鱼鉴产品需求文档》V1.1（14 章 + 附录 A~F）生成
+   产品：23 类海洋鱼类细粒度图像分类 B/S Web 应用
+   技术栈（PRD 第 3.2 节指定）：FastAPI + React + sqlite3 + PyTorch/ResNet18
+   性质：静态示例数据 · 不连后端 · 仅用于交互与视觉评审
+   ============================================================ */
+
+/* ---------- ① ICONS ---------- */
+var ICONS = {
+  fish:'M3 12c3.5-5.4 14.6-5.4 18 0-3.4 5.4-14.5 5.4-18 0Z M15.5 12h.01',
+  upload:'M21 15v3.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V15 M17 8.5 12 3.5 7 8.5 M12 3.5V15',
+  image:'M3 4.5h18v15H3z M3 15.5l4.5-4.5 3.5 3.5 3-3 6 6',
+  scan:'M3 7V4.5h3 M21 7V4.5h-3 M3 17v2.5h3 M21 17v2.5h-3 M7 12h10',
+  chart:'M4.5 4.5v15h15 M8 17V10 M12 17V6.5 M16 17v-4.5',
+  history:'M3.5 12a8.5 8.5 0 1 0 2.6-6.1 M3.5 4.5V10h5.5 M12 7.5V12l3.2 2',
+  user:'M12 11.5a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z M4.5 20.5c1.4-3.6 4.2-5.5 7.5-5.5s6.1 1.9 7.5 5.5',
+  users:'M9 11a3.25 3.25 0 1 0 0-6.5A3.25 3.25 0 0 0 9 11Z M2.5 19.5c1.2-3.1 3.6-4.7 6.5-4.7s5.3 1.6 6.5 4.7 M16.5 5.2a3 3 0 0 1 0 5.6 M18 14.9c1.7.6 3 1.9 3.6 3.7',
+  shield:'M12 3 5 6v6c0 4.2 3 7.6 7 9 4-1.4 7-4.8 7-9V6l-7-3Z M9.2 12.2l1.9 1.9 3.7-3.7',
+  gear:'M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.66 8.9a1.7 1.7 0 0 0-.34-1.88l-.06-.06A2 2 0 1 1 7.1 4.13l.06.06a1.7 1.7 0 0 0 1.88.34H9.1a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88v.04a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z',
+  check:'M20 6.5 9.2 17.3 4 12.1',
+  check_circle:'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19Z M8.4 12.1l2.5 2.5 4.7-4.7',
+  x:'M18 6 6 18 M6 6l12 12',
+  x_circle:'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19Z M15 9l-6 6 M9 9l6 6',
+  alert:'M12 8.5V13 M12 16.5h.01 M10.3 3.9 2.6 17.4A1.9 1.9 0 0 0 4.3 20.3h15.4a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0Z',
+  info:'M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19Z M12 11v5.5 M12 7.8h.01',
+  trash:'M4 7h16 M9.5 7V4.8h5V7 M6.5 7l1 12.2h9l1-12.2 M10 11v4.5 M14 11v4.5',
+  download:'M21 15v3.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V15 M7.5 10.5 12 15l4.5-4.5 M12 15V3.5',
+  search:'M11 18.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z M16.6 16.6 21 21',
+  refresh:'M20.5 12a8.5 8.5 0 1 1-2.5-6 M20.5 4.5V10H15',
+  arrow_left:'M19 12H5 M11.5 5.5 5 12l6.5 6.5',
+  arrow_right:'M5 12h14 M12.5 5.5 19 12l-6.5 6.5',
+  chev_down:'M6 9.5l6 6 6-6',
+  chev_right:'M9.5 6l6 6-6 6',
+  chev_up:'M6 14.5l6-6 6 6',
+  plus:'M12 5v14 M5 12h14',
+  lock:'M6.5 10.5h11v9.5h-11z M8.8 10.5V7.8a3.2 3.2 0 0 1 6.4 0v2.7',
+  mail:'M3 5.5h18v13H3z M3.5 6.2 12 12.6l8.5-6.4',
+  logout:'M15.5 4.5H19a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-3.5 M11 15.5 15 12l-4-3.5 M15 12H4',
+  filter:'M3.5 5.5h17 M6.5 12h11 M10 18.5h4',
+  compare:'M12 3.5v17 M6 7.5 3 10.5l3 3 M18 7.5l3 3-3 3 M3 10.5h5 M21 10.5h-5',
+  layers:'M12 3.5 3 8l9 4.5L21 8l-9-4.5Z M3 12.5 12 17l9-4.5 M3 16.5 12 21l9-4.5',
+  cpu:'M7.5 7.5h9v9h-9z M4.5 9.5h3 M4.5 14.5h3 M16.5 9.5h3 M16.5 14.5h3 M9.5 4.5v3 M14.5 4.5v3 M9.5 16.5v3 M14.5 16.5v3',
+  zap:'M13 2.5 4.5 13.5H11l-1 8L19.5 10H13l1-7.5Z',
+  eye:'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  eye_off:'M4 4l16 16 M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.4 3.3 M6.6 8.1A16.7 16.7 0 0 0 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 3.6-.7 M9.9 10.1a3 3 0 0 0 4.2 4.2',
+  clock:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M12 7.2V12l3.2 2',
+  calendar:'M3.5 6h17v15h-17z M3.5 10.5h17 M8 3.5V7 M16 3.5V7',
+  file:'M14 3.5H6.5v17h11V7z M14 3.5V7h3.5',
+  book:'M4 5.5A2 2 0 0 1 6 3.5h5.5v17H6a2 2 0 0 0-2 2Z M20 5.5a2 2 0 0 0-2-2h-5.5v17H18a2 2 0 0 1 2 2Z',
+  target:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z M12 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
+  wave:'M2.5 8.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0 M2.5 14.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0',
+  bell:'M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9Z M10.3 19.5a2 2 0 0 0 3.4 0',
+  key:'M15.5 3.5a5 5 0 1 1-4.2 7.7L4.5 18v2.5H7v-2h2v-2h2l1.3-1.3A5 5 0 0 1 15.5 3.5Z M16.3 8.3h.01',
+  play:'M6.5 4.2 19 12 6.5 19.8Z',
+  menu:'M3.5 7h17 M3.5 12h17 M3.5 17h17',
+  home:'M3.5 10.5 12 3.5l8.5 7v9.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z M9.5 21v-7h5v7',
+  book_open:'M12 7.5c-1.6-1.6-3.8-2-6.5-2v12c2.7 0 4.9.4 6.5 2 1.6-1.6 3.8-2 6.5-2v-12c-2.7 0-4.9.4-6.5 2Z M12 7.5v12',
+  compass:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M15.5 8.5l-2 5-5 2 2-5Z',
+  ban:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M5.6 5.6l12.8 12.8',
+  hdd:'M3.5 12.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18Z M3.5 12.5 6 5.5h12l2.5 7 M7 15.7h.01 M10.5 15.7h.01',
+  swap:'M7.5 4.5 4 8l3.5 3.5 M4 8h12a3 3 0 0 1 3 3 M16.5 20.5 20 17l-3.5-3.5 M20 17H8a3 3 0 0 1-3-3',
+  sliders:'M4 7h10 M18 7h2 M4 17h4 M12 17h8 M14 4.5v5 M8 14.5v5',
+  flag:'M5.5 21V3.5 M5.5 4.5h12l-2 3.5 2 3.5h-12'
+};
+function ic(name, extra){
+  var d = ICONS[name] || ICONS.info;
+  var cls = 'ic' + (extra ? ' ' + extra : '');
+  return '<svg class="' + cls + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+         '<path d="' + d + '"/></svg>';
+}
+function hydrateIcons(root){
+  var scope = root || document;
+  var list = scope.querySelectorAll('[data-ic]');
+  for (var i = 0; i < list.length; i++){
+    var el = list[i];
+    var nm = el.getAttribute('data-ic');
+    var sz = el.getAttribute('data-size');
+    el.innerHTML = ic(nm, sz === 'lg' ? 'ic-lg' : (sz === 'sm' ? 'ic-sm' : ''));
+  }
+}
+
+/* ---------- ② 静态数据（口径对齐 PRD） ---------- */
+/* 23 类物种：class_index = fish_(N+1) - 1，附录 A 已锁定，不得变更 */
+var SPECIES = [
+  {i:0,  d:'fish_1',  cn:'网纹宅泥鱼',   la:'Dascyllus reticulatus',          n:12110, morph:'体呈卵圆形而侧扁，全长约 6 ～ 8 厘米。体色深褐至近黑，鳞片边缘颜色较浅，形成清晰的网格状纹路，这也是中文名的由来。吻短，口小端位。背鳍硬棘 12 枚、软条 14 ～ 16 枚；臀鳍硬棘 2 枚、软条 12 ～ 14 枚。尾鳍浅叉形，末端圆钝。幼鱼体色偏淡，网纹不如成鱼明显，常被误认作其他雀鲷。', habit:'栖息于珊瑚礁区枝状珊瑚丛间，常成小群活动，遇到危险迅速躲入珊瑚枝间隙。杂食性，以浮游甲壳类、藻类及珊瑚黏液为食。具较强领域性，繁殖期雄鱼会守护产卵场。', dist:'分布于印度—西太平洋热带海域，包括红海、东非沿岸、日本南部至澳大利亚大堡礁。栖息水深约 1 ～ 20 米，偏好珊瑚生长茂密的浅水礁区。'},
+  {i:1,  d:'fish_2',  cn:'迪克氏固曲齿鲷', la:'Plectroglyphidodon dickii',    n:2681,  morph:'体呈长椭圆形，略侧扁，全长约 8 ～ 10 厘米。体色深褐色至黑褐，体侧有 1 条明显的白色垂直宽带，位于背鳍软条部下方。背鳍硬棘 12 枚、软条 15 ～ 16 枚。吻部短钝，齿为单列固着型。尾鳍深叉，末端尖。胸鳍透明，基部有一暗斑。', habit:'定居于珊瑚礁枝丛中，对栖居的珊瑚枝极具依恋，受惊时立即缩入枝隙而非远逃。以藻类为主食，兼食小型无脊椎动物，摄食时在礁面来回啄食。全年可见繁殖活动。', dist:'分布于印度—西太平洋，自东非、日本南部至法属波利尼西亚。水深 1 ～ 15 米的礁盘与礁坡，以珊瑚生长繁茂处最常见。'},
+  {i:2,  d:'fish_3',  cn:'长棘光鳃鱼',   la:'Chromis chrysura',               n:3591,  morph:'体呈椭圆形，稍侧扁，全长约 8 ～ 12 厘米。体色以灰褐至淡褐为主，背部颜色较深，腹部偏银白。鳃盖后缘有一明显的白色斑块。背鳍硬棘 13 枚、软条 12 ～ 13 枚；背鳍末端软条延长成丝状，是该种显著特征。尾鳍深叉，上下叶末端尖细。', habit:'典型的群聚型雀鲷，常在礁坡上方水体中结成数十至数百尾的大群，随水流漂移取食浮游生物。遇掠食者时群体迅速下潜贴礁。杂食性，以浮游动物为主。', dist:'分布于西太平洋，北起日本南部，南至澳大利亚东北部与美拉尼西亚。栖息水深 3 ～ 40 米，以礁坡中上层水体最密集。'},
+  {i:3,  d:'fish_4',  cn:'克氏双锯鱼',   la:'Amphiprion clarkii',             n:4047,  morph:'体呈椭圆形，侧扁，全长约 8 ～ 12 厘米，雌鱼大于雄鱼。体色变异较大：体侧橙黄至黑褐，具 3 条白色垂直宽带，分别位于眼后、体中部与尾柄前方。各鳍常带黑色边缘。背鳍硬棘 10 ～ 11 枚、软条 15 ～ 17 枚。', habit:'与大型海葵共生，是双锯鱼属中寄主种类最广的一种。体表分泌黏液以抵御海葵刺细胞。具先雄后雌的性转变特性，群体中体型最大者为雌鱼。杂食性，以藻类、桡足类及海葵残余食物为食。', dist:'广泛分布于印度—西太平洋，自红海、东非至日本南部、澳大利亚与密克罗尼西亚。水深 1 ～ 60 米，凡有合适海葵的礁区均可见。'},
+  {i:4,  d:'fish_5',  cn:'弓月蝴蝶鱼',   la:'Chaetodon lunulatus',            n:2532,  morph:'体呈盘形，极侧扁，全长约 12 ～ 15 厘米。体色以淡黄褐为底，体侧具多条与体轴斜交的暗褐色细纹，纹路呈弓月状弧形排列，故名。头部有一条黑色纵带穿过眼睛。背鳍软条延长超过尾柄。尾鳍近截形，具黑色边缘。', habit:'成对或小群活动于珊瑚礁区，领域性较强。以珊瑚虫为主食，兼食小型无脊椎动物，是典型的珊瑚食性蝴蝶鱼，饲养难度较高。受惊时快速摆尾钻进珊瑚枝间。', dist:'分布于西太平洋至中太平洋，自日本南部、中国台湾沿海至澳大利亚、法属波利尼西亚。水深 1 ～ 30 米的珊瑚礁区。'},
+  {i:5,  d:'fish_6',  cn:'川纹蝴蝶鱼',   la:'Chaetodon trifascialis',         n:188,   morph:'体呈长盘形，侧扁，全长约 12 ～ 18 厘米。体色以灰白为底，体侧具多条与背缘平行的黑色折线纹，纹路走向转折，形似连续的「川」字，是区别近缘种的关键特征。幼鱼体侧有一条贯穿眼部的黑色纵带，成鱼后消失。尾鳍黑色，末端白色。', habit:'强领域性，通常单独或成对守卫一片鹿角珊瑚群落，对进入领域的同类及其他鱼类均会驱赶。几乎专食鹿角珊瑚的珊瑚虫，食性高度专一。', dist:'分布于印度—西太平洋，自红海、东非至日本南部与澳大利亚大堡礁。水深 1 ～ 30 米，以鹿角珊瑚生长旺盛处为主。'},
+  {i:6,  d:'fish_7',  cn:'康德锯鳞鱼',   la:'Myripristis kuntee',             n:448,   morph:'体呈椭圆形，侧扁，全长约 15 ～ 20 厘米。体色银红至橙红，鳃盖后缘有一深红色斑块。眼大，约占头长三分之一。背鳍前方有一明显的前向棘。鳞片较大且边缘粗糙，触之如锯，故名锯鳞鱼。各鳍红色，边缘色淡。', habit:'夜行性，白天结群藏于礁穴、礁檐阴影处，日落后外出在礁坡上方水层活动觅食。以浮游甲壳类为主食。受惊时发出鼓音。', dist:'分布于印度—太平洋，自东非、红海至夏威夷、日本南部与澳大利亚。水深 3 ～ 50 米，以礁穴与礁坡阴影处最常见。'},
+  {i:7,  d:'fish_8',  cn:'双斑刺尾鱼',   la:'Acanthurus nigrofuscus',         n:216,   morph:'体呈椭圆形，侧扁，全长约 15 ～ 21 厘米。体色深褐至灰褐，体表常密布细小的暗色斑点。尾柄两侧各有一枚尖锐的骨质棘，是刺尾鱼科的典型防御器官。背鳍硬棘 9 枚、软条 24 ～ 27 枚。尾鳍浅凹，边缘色深。', habit:'白天结群在礁面刮食藻类，是礁区重要的藻类控制者。常与其他刺尾鱼混群。受威胁时侧身以尾棘相向。活动范围较大，随潮汐在礁面上下移动。', dist:'广泛分布于印度—太平洋，自红海、东非至日本南部、澳大利亚与夏威夷。水深 0 ～ 25 米的礁盘与礁坡。'},
+  {i:8,  d:'fish_9',  cn:'横带粗唇鱼',   la:'Hemigymnus fasciatus',           n:239,   morph:'体呈长椭圆形，稍侧扁，全长约 20 ～ 30 厘米。吻部突出，唇厚而肉质，这是粗唇鱼属的共同特征。成鱼体侧具 5 ～ 6 条黑色垂直宽带，宽度约等于间距。体色灰白至淡黄。背鳍软条末端略延长。尾鳍圆形，边缘色暗。', habit:'栖息于礁盘与礁坡的碎石与珊瑚混合区，常在沙底上方缓慢巡游。以底栖无脊椎动物为主食，靠厚唇在石缝间探取猎物，遇威胁会钻入沙中。幼鱼体色与成鱼差异较大。', dist:'分布于印度—西太平洋，自红海、东非至日本南部与澳大利亚。水深 1 ～ 30 米的礁区沙底与碎石带。'},
+  {i:9,  d:'fish_10', cn:'莎姆金鳞鱼',   la:'Neoniphon sammara',              n:297,   morph:'体呈长椭圆形，侧扁，全长约 18 ～ 25 厘米。体色银红，体侧具若干条淡色纵纹，鳞片边缘色深形成网格感。各鳍带红褐色斑纹与浅色边缘。眼大，吻端略尖。尾鳍深叉。与锯鳞鱼相比，本种体形更细长、色彩偏银。', habit:'群居性，白天成小群藏于礁枝与礁穴间，夜间分散在礁坡上方觅食浮游动物。以小型甲壳类为主食。受惊后迅速返回固定洞穴。', dist:'分布于印度—太平洋，自红海、东非至日本南部、澳大利亚与夏威夷。水深 0 ～ 46 米。'},
+  {i:10, d:'fish_11', cn:'五带豆娘鱼',   la:'Abudefduf vaigiensis',           n:96,    morph:'体呈卵圆形，侧扁，全长约 12 ～ 17 厘米。体色灰白至淡黄，体侧具 5 条黑色垂直宽带，其中最末一条位于尾柄。鳞片较大，体表略显粗糙。背鳍硬棘 13 枚、软条 12 ～ 14 枚。尾鳍浅叉形，边缘色淡。', habit:'常成群在礁盘上层水体活动，也出现在码头、港湾等人工结构附近。杂食性，以浮游生物、藻类与小型无脊椎动物为食，摄食积极。繁殖期雄鱼在礁面清理巢位并守护卵块。', dist:'广泛分布于印度—太平洋，自红海、东非至日本南部、澳大利亚与法属波利尼西亚。水深 0 ～ 15 米，也常见于近岸浅水与港区。'},
+  {i:11, d:'fish_12', cn:'黑马鞍鲀',     la:'Canthigaster valentini',         n:145,   morph:'体呈卵形，背部隆起，全身无鳞而代以细刺，全长约 8 ～ 11 厘米。体色乳白，背部有 4 条黑色垂直宽带，头顶与尾柄各有一黑斑，形似马鞍。吻部尖突，各齿愈合成喙状。腹部可膨大。', habit:'日行性，单独或成对活动于礁区底部，取食时啄食礁面。以藻类、海绵、珊瑚及小型无脊椎动物为食。受威胁时吸入海水膨胀身体使捕食者难以吞咽，皮肤含河鲀毒素。', dist:'分布于印度—西太平洋，自红海、东非至日本南部与澳大利亚。水深 1 ～ 55 米的礁区与砾石底。'},
+  {i:12, d:'fish_13', cn:'摩鹿加雀鲷',   la:'Pomacentrus moluccensis',        n:179,   morph:'体呈椭圆形，侧扁，全长约 6 ～ 8 厘米，是本属中体型较小者。体色鲜艳的柠檬黄，通体一致，腹部略浅。幼鱼体侧有时可见淡蓝色细纹。背鳍硬棘 13 枚、软条 14 ～ 15 枚。眶下骨下缘光滑，无缺刻。', habit:'礁区常见的小型雀鲷，多单独或成小群在珊瑚枝间穿行。领域性强，会积极驱赶靠近的同类。以浮游生物与藻类为食。产卵于礁面基质上，由雄鱼护卵。', dist:'分布于西太平洋，自日本南部、中国台湾、菲律宾至澳大利亚大堡礁与新喀里多尼亚。水深 1 ～ 15 米的珊瑚礁区。'},
+  {i:13, d:'fish_14', cn:'黑三角倒吊鱼', la:'Zebrasoma scopas',               n:88,    morph:'体呈高而扁的卵形，体高约为体长的一半以上，全长约 15 ～ 20 厘米。吻部突出成管状。体色褐至暗褐，体侧密布细小暗色点，常形成不规则的纵向细纹。尾柄两侧各有一枚白色骨质棘，周围组织色深。背鳍高，展开呈帆状。', habit:'日行性，单独或成小群在礁面刮食丝状藻类，是礁区重要的植食性鱼类。活动范围相对固定，沿固定路线往返摄食。受威胁时竖起背鳍并以尾棘防卫。', dist:'分布于印度—太平洋，自东非、红海至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 30 米的礁盘与礁坡。'},
+  {i:14, d:'fish_15', cn:'黑鳍粗唇鱼',   la:'Hemigymnus melapterus',          n:40,    morph:'体呈长椭圆形，侧扁，全长约 25 ～ 35 厘米，是本属中体型较大者。吻部突出，唇厚。体色分为前后两段：前半部灰白至淡绿，后半部渐变为黑褐色，两段之间界限较明显。头部长有淡色斑点与短纹。尾鳍圆形，色深。', habit:'栖息于礁盘与礁坡的珊瑚与碎石混合区，常在沙底上方游动，靠厚唇翻动石块与珊瑚碎块觅取底栖无脊椎动物。受惊时迅速钻入沙中。幼鱼与成鱼体色差异显著。', dist:'分布于印度—太平洋，自红海、东非至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 30 米。'},
+  {i:15, d:'fish_16', cn:'黄足笛鲷',     la:'Lutjanus fulvus',                n:204,   morph:'体呈长椭圆形，稍侧扁，全长约 25 ～ 40 厘米。体色黄褐至灰褐，体侧鳞片边缘色深，形成细密的网格纹。各鳍黄色至橙黄，胸鳍与腹鳍黄色最为明显，故名黄足笛鲷。头背部轮廓较平直。眼较大，位于头前部。', habit:'多单独或成小群活动，白天栖息于礁穴与礁檐下，黄昏后外出觅食。肉食性，以鱼类、虾类与头足类为食。领域性不强，但对同种个体有一定排斥。', dist:'分布于印度—太平洋，自东非、红海至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 75 米，以礁区与潟湖区最常见。'},
+  {i:16, d:'fish_17', cn:'双线眶棘鲈',   la:'Scolopsis bilineata',            n:47,    morph:'体呈长椭圆形，侧扁，全长约 15 ～ 20 厘米。体色银白至淡黄褐，体侧有 2 条明显的黑色纵带：一条由吻端经眼延伸至背鳍前方，另一条位于体侧中部并延伸至尾柄。眶前骨后缘有 1 枚向后的棘，是眶棘鲈属的特征。背鳍具硬棘 10 枚。', habit:'常单独在礁盘沙底上方缓慢游动，遇威胁立即钻入沙中躲藏，是典型的沙底栖居型鱼类。以底栖无脊椎动物为主食，靠下颌探入沙中翻取食物。', dist:'分布于西太平洋至印度洋东部，自日本南部、中国南海至澳大利亚北部。水深 1 ～ 25 米的礁区沙底与碎石带。'},
+  {i:17, d:'fish_18', cn:'鹦嘴鱼科',     la:'Scaridae',                       n:54,    morph:'科级特征：体呈长椭圆形至纺锤形，稍侧扁，体长因种而异。吻部前突呈喙状，上下颌齿愈合成齿板，形似鹦鹉喙，故名。体色多变，常见绿、蓝、褐、红等色系，多数种类体表具明显的色斑或条带。咽齿发达，用于研磨食物。尾鳍形态因种而异，由浅凹至深叉均有。', habit:'科级特征：日行性，栖息于珊瑚礁区，以礁面附生藻类为主食，摄食时以喙状齿板刮取礁面，是礁区重要的生物侵蚀者。多数种类有性转变现象。夜间多藏于礁穴或分泌黏液茧休息。', dist:'科级特征：广泛分布于全球热带与亚热带珊瑚礁区，以印度—太平洋种类最为丰富。栖息水深由潮间带至数十米不等。'},
+  {i:18, d:'fish_19', cn:'黑缘单鳍鱼',   la:'Pempheris vanicolensis',         n:27,    morph:'体呈卵圆形，侧扁，全长约 12 ～ 18 厘米。体色银红至铜红，背部色调较深。眼大，占头长比例高，适应弱光环境。背鳍短小，起点位于体中部偏后，是单鳍鱼类的特征。臀鳍基部较长。尾鳍深叉。腹部轮廓较圆。', habit:'夜行性，白天结成密集鱼群藏于礁穴、礁檐或沉船内部，日落后成群上浮至水体中上层捕食浮游动物。趋光性强，夜间在有光源的水域尤为活跃。', dist:'分布于印度—西太平洋，自红海、东非至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 30 米，以礁穴与礁檐处最常见。'},
+  {i:19, d:'fish_20', cn:'镰鱼',         la:'Zanclus cornutus',               n:19,    morph:'体呈高而扁的盘形，全长约 15 ～ 22 厘米，形态极为独特。吻部前伸成管状。体色以白色为底，具 3 条宽大的黑色垂直带；背部与臀鳍延伸成长丝状镰刀形，可超过体长。头顶两侧各有一小突起。尾鳍截形，黑色带白边。', habit:'单独或成对活动于礁区，多在礁面缓慢游动掠食海绵、藻类与附着生物。形态上以高鳍丝掩饰自身轮廓，游动时轮廓不规则，可迷惑捕食者。领域性较弱。', dist:'分布于印度—太平洋，自东非、红海至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 30 米的礁盘与礁坡。'},
+  {i:20, d:'fish_21', cn:'黑嘴雀鲷',     la:'Neoglyphidodon nigroris',        n:14,    morph:'体呈椭圆形，侧扁，全长约 10 ～ 13 厘米。成鱼体色深褐至近黑，唇部与吻端黑色尤为明显，这是中文名的由来。体侧鳞片边缘色淡，形成隐约的网纹。幼鱼体色与成鱼差异极大：幼鱼体色鲜黄，背部有 2 条黑色纵带，随成长逐渐消失。背鳍硬棘 13 枚。', habit:'单独特居于珊瑚枝丛中，领域性强，对侵入领域者积极驱赶。以藻类与小型底栖无脊椎动物为食。生殖期雄鱼在礁面清理产卵基址并护卵。幼鱼与成鱼色型差异极大，曾长期被误认为不同种。', dist:'分布于西太平洋，自日本南部、中国台湾、菲律宾至印度尼西亚与澳大利亚北部。水深 1 ～ 15 米的珊瑚礁区。'},
+  {i:21, d:'fish_22', cn:'黄纹炮弹鱼',   la:'Balistapus undulatus',           n:39,    morph:'体呈长椭圆形，稍侧扁，全长约 25 ～ 38 厘米。体色以深绿褐为底，体侧具多条与体轴斜交的橙黄色波状纵纹，纹路在背鳍与臀鳍上方转为水平。吻端尖突。背鳍第一棘粗壮，可竖起锁定，是炮弹鱼类的典型防御结构。尾柄两侧具骨质瘤突。尾部上下叶颜色常较深。', habit:'单独活动于礁区，领域性强，对入侵领地者会主动攻击。以海胆、贝类、甲壳类与珊瑚为食，靠强壮的颌齿咬碎硬壳猎物。夜间藏于礁穴休息。', dist:'广泛分布于印度—太平洋，自红海、东非至日本南部、澳大利亚与法属波利尼西亚。水深 1 ～ 50 米的礁区。'},
+  {i:22, d:'fish_23', cn:'褐蓝子鱼',     la:'Siganus fuscescens',             n:23,    morph:'体呈长椭圆形，稍侧扁，全长约 20 ～ 30 厘米。体色褐至黄褐，背部颜色较深，体侧密布细小的暗色斑点，部分个体散有淡色小点。吻部前突，口小。背鳍硬棘 13 枚，硬棘具毒腺，被刺伤会引起剧痛。尾鳍浅叉，边缘色深。', habit:'日行性，幼鱼结群活动于礁盘浅水与海草床，成鱼多单独或成小群。植食性为主，以藻类与海草为食，兼食少量小型无脊椎动物。受惊时迅速躲入礁穴或海草丛。', dist:'分布于西太平洋，自日本南部、中国沿海至菲律宾、澳大利亚东北部。水深 0 ～ 30 米，常见于礁盘、海草床与河口附近。'}
+];
+var SP_BY_CN = {};
+(function(){ for (var i = 0; i < SPECIES.length; i++){ SP_BY_CN[SPECIES[i].cn] = SPECIES[i]; } })();
+
+/* 候选记录数据（历史 / 对比）；数值口径对齐 PRD 验收用例 */
+var RECORDS = [
+  {id:'7f3a1c9e-2b4d-4e88-9a01-5c6d7e8f9a0b', spIdx:0,  conf:92.4, fn:'DSC_0413.png',  t:'2026-09-20 21:14:08', ms:1180, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_1',  img:'fish_1'},
+  {id:'a41b8d02-6c3e-4f19-8b27-2d9e4b7c1f36', spIdx:3,  conf:88.1, fn:'IMG_2207.jpeg',  t:'2026-09-20 20:52:33', ms:1046, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_4',  img:'fish_4'},
+  {id:'c92f5e77-3a18-4c60-9d34-6b1a7e2f8c05', spIdx:2,  conf:76.5, fn:'reef_survey_012.png', t:'2026-09-20 19:31:02', ms:1122, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_3', img:'fish_3'},
+  {id:'e13a7b48-9d25-4a71-b6c8-0f2e5d9a3b17', spIdx:5,  conf:64.3, fn:'IMG_3155.jpeg',  t:'2026-09-19 17:08:41', ms:1094, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_6',  img:'fish_6'},
+  {id:'b70c2f19-5e8a-4d36-a1f4-3c9b6e7d2a84', spIdx:20, conf:31.2, fn:'coral_watch_07.png', t:'2026-09-19 15:44:19', ms:1236, low:true,  model:'seatong-resnet18-v1.2.0', sp:'fish_21', img:'fish_21'},
+  {id:'d58e9a03-7b14-4e29-8c05-1a6f3d9b4e27', spIdx:13, conf:81.7, fn:'IMG_2088.png',   t:'2026-09-18 11:22:57', ms:1013, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_14', img:'fish_14'},
+  {id:'f2b6d491-8c37-4a50-9e28-7b4d1a6c3f09', spIdx:19, conf:70.9, fn:'zanzibar_trip_022.jpeg', t:'2026-09-17 09:35:12', ms:1158, low:false, model:'seatong-resnet18-v1.2.0', sp:'fish_20', img:'fish_20'},
+  {id:'0a9c4e82-1d63-4b78-a5f9-8e2c7b3d5a16', spIdx:22, conf:29.6, fn:'market_shot_04.png', t:'2026-09-16 18:47:30', ms:1272, low:true,  model:'seatong-resnet18-v1.2.0', sp:'fish_23', img:'fish_23'}
+];
+
+/* 管理员用户列表 */
+var USERS = [
+  {id:1, name:'admin',     nick:'系统管理员',   status:'on',  reg:'2026-09-17 09:12:04', cnt:0,    role:'admin'},
+  {id:2, name:'hyq2023',   nick:'何永麒',       status:'on',  reg:'2026-09-17 14:33:51', cnt:8,    role:'user'},
+  {id:3, name:'reef_wang', nick:'王研究员',     status:'on',  reg:'2026-09-18 08:20:16', cnt:214,  role:'user'},
+  {id:4, name:'fisher_li', nick:'李师傅',       status:'on',  reg:'2026-09-18 16:05:42', cnt:37,   role:'user'},
+  {id:5, name:'ocean_kid', nick:'小海',         status:'off', reg:'2026-09-19 10:48:09', cnt:3,    role:'user'},
+  {id:6, name:'lab_zhang', nick:'张同学',       status:'on',  reg:'2026-09-19 20:11:27', cnt:52,   role:'user'}
+];
+
+/* 识别队列（工作台） */
+var QUEUE = [
+  {name:'DSC_0413.png',  size:'3.2 MB', ok:true,  err:''},
+  {name:'IMG_2207.jpeg', size:'1.8 MB', ok:true,  err:''},
+  {name:'reef_survey_012.png', size:'4.6 MB', ok:true, err:''}
+];
+
+/* 结果页候选（Top-5，绝对概率映射） */
+var CANDIDATES = [
+  {cn:'萨氏拟花鮨', la:'Pseudanthias squamipinnis', p:0.0},
+  {cn:'网纹宅泥鱼', la:'Dascyllus reticulatus',     p:0.924},
+  {cn:'迪克氏固曲齿鲷', la:'Plectroglyphidodon dickii', p:0.041},
+  {cn:'摩鹿加雀鲷', la:'Pomacentrus moluccensis', p:0.019},
+  {cn:'五带豆娘鱼', la:'Abudefduf vaigiensis',   p:0.009},
+  {cn:'康德锯鳞鱼', la:'Myripristis kuntee',     p:0.004},
+  {cn:'黑嘴雀鲷',   la:'Neoglyphidodon nigroris', p:0.002},
+  {cn:'莎姆金鳞鱼', la:'Neoniphon sammara',      p:0.001}
+];
+
+/* 分页示例：历史共 8 条，每页 20 条 → 1 页 */
+</script>
+<script>
+/* ---------- ③ 全局状态 ---------- */
+var CONFIG = {
+  lowConfThreshold: 0.40,   /* BR-RECOG-04：默认 0.40，管理员可调（BR-USER-18：0.10~0.90） */
+  batchLimit: 9,            /* BR-UPLOAD-03：单批最多 9 张（BR-USER-18：1~20） */
+  colorCorrect: true,       /* FR-PREPROC-03：色偏校正开关，默认开启 */
+  retentionDays: 180,       /* BR-HISTORY-10：原图留存 180 天（BR-USER-18：30~365） */
+  guestQuota: 3             /* FR-USER-06：游客试用 3 次 */
+};
+
+var state = {
+  route:'home',
+  authed:false,
+  role:'guest',             /* guest | user | admin */
+  me:{name:'', nick:'', email:'', reg:'', cnt:0},
+  guestLeft:3,
+  queue:[],
+  batchRunning:false,
+  batchCur:0,
+  resultSpIdx:0,
+  resultConf:0.924,
+  resultMs:1180,
+  resultForHistory:false,
+  stage:3,
+  viewSpecies:null,
+  speciesTab:0,
+  speciesOpen:true,
+  showPreproc:false,
+  uploadErr:'',
+  historySel:[],
+  historyFilters:{range:'all', from:'', to:'', sp:'all', kw:'', order:'desc'},
+  historyPage:1,
+  compareSel:[],
+  adminTab:0,
+  adminUserKw:'',
+  adminRecKw:'',
+  cfg:JSON.parse(JSON.stringify(CONFIG)),
+  loginForm:{name:'', pwd:''},
+  loginErr:'',
+  loginLock:'',
+  regForm:{name:'', pwd:'', pwd2:'', email:''},
+  regTouched:{name:false, pwd:false, pwd2:false, email:false},
+  profileForm:{nick:'何永麒', email:'hyq2023@example.com'},
+  profileErr:{},
+  pwdForm:{old:'', nw:'', nw2:''},
+  pwdErr:{},
+  guestLeftAfter:null,
+  toastSeq:0,
+  folded:{morph:true, habit:false, dist:false}
+};
+
+/* 视图内局部状态：按视图键隔离，切换视图不丢失 */
+var ny = {};
+function nyGet(key, dflt){
+  if (!(key in ny)) ny[key] = dflt;
+  return ny[key];
+}
+function nySet(key, val){ ny[key] = val; }
+
+/* ---------- ④ 工具 ---------- */
+function esc(s){
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+/* 百分比：保留 1 位小数；四舍五入为 0.0% 时显示 < 0.1%（BR-RESULT-02） */
+function fmtPct(v){
+  var p = v * 100;
+  if (p > 0 && p < 0.05) return '< 0.1%';
+  return p.toFixed(1) + '%';
+}
+function fmtPctNum(v){
+  var p = v * 100;
+  if (p > 0 && p < 0.05) return '< 0.1';
+  return p.toFixed(1);
+}
+function truncMid(s, n){
+  if (s.length <= n) return s;
+  var head = Math.ceil((n - 1) / 2), tail = Math.floor((n - 1) / 2);
+  return s.slice(0, head) + '…' + s.slice(s.length - tail);
+}
+function nowStr(){
+  var d = new Date();
+  function p(n){ return n < 10 ? '0' + n : '' + n; }
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+         p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+function toast(msg, kind){
+  var root = document.getElementById('toast-root');
+  if (!root) return;
+  var id = 'toast-' + (++state.toastSeq);
+  var iconName = kind === 'err' ? 'x_circle' : (kind === 'warn' ? 'alert' : (kind === 'ok' ? 'check_circle' : 'info'));
+  var div = document.createElement('div');
+  div.className = 'toast ' + (kind || '');
+  div.id = id;
+  div.innerHTML = ic(iconName, 'ic-sm') + '<span>' + esc(msg) + '</span>';
+  root.appendChild(div);
+  setTimeout(function(){
+    var el = document.getElementById(id);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }, 3200);
+}
+
+/* 需求追溯条 */
+function trace(codes, note){
+  return '<div class="trace"><b>PRD 需求追溯</b><div class="codes">' +
+    codes.map(function(c){ return '<code>' + c + '</code>'; }).join('') +
+    '</div>' + (note ? '<div class="note">' + note + '</div>' : '') + '</div>';
+}
+
+/* 通用小组件 */
+function tag(text, kind, iconName){
+  return '<span class="tag ' + (kind || '') + '">' +
+    (iconName ? ic(iconName, 'ic-sm') : '') + esc(text) + '</span>';
+}
+function alertBox(kind, title, body){
+  var map = {warn:'alert', info:'info', err:'x_circle', ok:'check_circle'};
+  return '<div class="alert alert-' + (kind || 'info') + '">' + ic(map[kind] || 'info') +
+    '<div><b>' + esc(title) + '</b>' + (body ? '<div class="mt8">' + body + '</div>' : '') + '</div></div>';
+}
+function statCard(k, v, x){
+  return '<div class="stat"><div class="k">' + esc(k) + '</div><div class="v num">' + v + '</div>' +
+    (x ? '<div class="x">' + esc(x) + '</div>' : '') + '</div>';
+}
+function imgPh(text, sub){
+  return '<div class="img-ph">' + ic('image', 'ic-lg') + '<div><b>' + esc(text) + '</b>' +
+    (sub ? '<div class="mt8">' + esc(sub) + '</div>' : '') + '</div></div>';
+}
+function fishImg(spKey, cls, alt){
+  var p = 'fish_image23/fish_image/' + spKey + '/';
+  return '<img class="' + (cls || 'orig-img') + '" src="' + p + '1.png" alt="' + esc(alt || '鱼类图像') + '"' +
+         ' loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',' +
+         '\'<div class=&quot;img-ph&quot;><span class=&quot;muted&quot;>示例图像未随原型附带</span></div>\');">';
+}
+function thumbImg(spKey, alt){
+  var p = 'fish_image23/fish_image/' + spKey + '/';
+  return '<img class="cell-thumb" src="' + p + '1.png" alt="' + esc(alt) + '" loading="lazy"' +
+    ' onerror="this.style.visibility=\'hidden\';">';
+}
+
+/* 加载态分级（PRD 5.4.1） */
+function skeletonCard(h){
+  return '<div class="skeleton" style="height:' + h + 'px"></div>';
+}
+
+/* 空态（PRD 5.4.3） */
+function emptyBox(iconName, title, desc, btnLabel, act){
+  return '<div class="empty">' + ic(iconName || 'image', 'ic-lg') + '<b>' + esc(title) + '</b>' +
+    (desc ? '<p>' + esc(desc) + '</p>' : '') +
+    (btnLabel ? '<button class="btn btn-primary" data-act="' + act + '">' + esc(btnLabel) + '</button>' : '') +
+    '</div>';
+}
+</script>
+<script>
+/* ---------- ⑤ 视图 ---------- */
+
+/* ===== 首页  /  （PRD 5.2：产品一句话说明、识别入口、能力说明、物种覆盖数、使用须知） ===== */
+function viewHome(){
+  var h = [];
+  h.push('<div class="hero">');
+  h.push('<div class="row" style="margin-bottom:14px">' +
+    tag('23 类海洋鱼类细粒度分类', 'tag-primary', 'fish') +
+    tag('总体准确率 ≥ 85%', 'tag-info', 'target') +
+    tag('平均宏观 F1 ≥ 0.82', 'tag-info', 'chart') + '</div>');
+  h.push('<h1>上传一张水下鱼类图像，<br>得到物种名称、置信度与 Top-5 候选</h1>');
+  h.push('<p class="lead">海瞳鱼鉴基于 ResNet18 迁移学习模型，对 23 类海洋鱼类完成细粒度识别。' +
+    '单图识别在秒级返回，同时给出该物种的形态特征、生活习性与地理分布。</p>');
+  h.push('<div class="row">' +
+    '<button class="btn btn-primary" data-act="go" data-route="recognize">' + ic('upload', 'ic-sm') +
+    ' 开始识别</button>' +
+    '<button class="btn" data-act="go" data-route="about">' + ic('shield', 'ic-sm') + ' 能力边界与免责</button>' +
+    (state.authed ? '' : '<span class="muted">游客可免登录试用 3 次，无需注册即可体验</span>') +
+    '</div>');
+  h.push('</div>');
+
+  /* 使用流程 */
+  h.push('<div class="mt24"></div>');
+  h.push('<div class="card"><div class="card-h"><div><h3>使用流程</h3>' +
+    '<p class="sub">从上传到获得结论，全流程在同一页面内完成，不做页面跳转</p></div>' +
+    tag('单图端到端 ≤ 3 秒', 'tag-success', 'zap') + '</div>');
+  h.push('<div class="flow-line">' +
+    '<span class="step">' + ic('image', 'ic-sm') + ' 上传图像</span>' + ic('chev_right', 'ic-sm') +
+    '<span class="step">' + ic('sliders', 'ic-sm') + ' 预处理（224×224）</span>' + ic('chev_right', 'ic-sm') +
+    '<span class="step">' + ic('cpu', 'ic-sm') + ' 模型推理</span>' + ic('chev_right', 'ic-sm') +
+    '<span class="step">' + ic('chart', 'ic-sm') + ' Top-5 概率</span>' + ic('chev_right', 'ic-sm') +
+    '<span class="step">' + ic('book_open', 'ic-sm') + ' 物种介绍</span>' +
+    '</div></div>');
+
+  /* 能力说明 */
+  h.push('<div class="mt16"></div>');
+  h.push('<div class="grid-3">');
+  var caps = [
+    {ic:'scan', t:'细粒度判别', d:'模型针对 23 类外形相近的鱼类训练，输出 Top-5 候选与置信度，结果可复核。'},
+    {ic:'layers', t:'批量处理', d:'单次最多 9 张，按提交顺序逐张识别，逐张填充结果卡片并显示当前序号。'},
+    {ic:'history', t:'结果沉淀', d:'识别记录自动留存，支持按时间与物种筛选、图像对比与 CSV 导出。'},
+    {ic:'book', t:'物种知识库', d:'23 类预置文案，含形态特征、习性与分布；文案经人工校核后录入。'},
+    {ic:'shield', t:'隐私保护', d:'全站强制 HTTPS，密码加盐哈希存储；图像仅用于本次识别，不用于训练。'},
+    {ic:'compass', t:'响应式访问', d:'PC 与移动端浏览器直接访问，三档断点适配，无需安装任何客户端。'}
+  ];
+  for (var i = 0; i < caps.length; i++){
+    h.push('<div class="card card-tight"><div class="row" style="align-items:flex-start;gap:11px">' +
+      '<span class="sp-ic">' + ic(caps[i].ic, 'ic-sm') + '</span>' +
+      '<div><div style="font-weight:600;font-size:13.5px">' + esc(caps[i].t) + '</div>' +
+      '<div class="muted mt8" style="line-height:1.6">' + esc(caps[i].d) + '</div></div></div></div>');
+  }
+  h.push('</div>');
+
+  /* 物种覆盖数 */
+  h.push('<div class="mt16"></div>');
+  h.push('<div class="card"><div class="card-h"><div><h3>物种覆盖范围</h3>' +
+    '<p class="sub">模型仅覆盖以下 23 个类别，类别顺序由 classes.txt 一次性锁定，不得变更</p></div>' +
+    '<button class="btn btn-sm" data-act="go" data-route="about">' + ic('info', 'ic-sm') + ' 查看能力边界</button>' +
+    '</div>');
+  h.push('<div class="grid-4">');
+  h.push(statCard('覆盖类别数', '23 <span style="font-size:14px;color:var(--text-3)">类</span>', '闭集分类，无「未知物种」类别'));
+  h.push(statCard('训练集样本量', '27,324 <span style="font-size:14px;color:var(--text-3)">张</span>', '清洗前实测，清洗后以 T-06 统计为准'));
+  h.push(statCard('划分比例', '8 : 1 : 1', '分层抽样，保持长尾类别分布'));
+  h.push(statCard('尾部最小类', '14 <span style="font-size:14px;color:var(--text-3)">张</span>', 'fish_21 黑嘴雀鲷，长尾风险最高'));
+  h.push('</div>');
+  h.push('<div class="mt16"></div>');
+  h.push('<div class="two-col-list">');
+  for (var j = 0; j < SPECIES.length; j++){
+    var s = SPECIES[j];
+    h.push('<div class="sp-item"><span class="sp-ic">' + s.i + '</span><div><div class="nm">' + esc(s.cn) +
+      (s.i === 17 ? ' <span class="tag tag-warn" style="margin-left:4px">科级</span>' : '') + '</div>' +
+      '<div class="lt">' + esc(s.la) + '</div></div></div>');
+  }
+  h.push('</div>');
+  h.push('<div class="mt12"><span class="muted">说明：fish_18 官方仅给出科级 <i>Scaridae</i>，未定种，' +
+    '知识库文案与页面展示均按科级描述，不杜撰种名。</span></div>');
+  h.push('</div>');
+
+  /* 使用须知 */
+  h.push('<div class="mt16"></div>');
+  h.push('<div class="card"><div class="card-h"><h3>使用须知</h3>' +
+    tag('任务书 6.1 使用声明', 'tag-info', 'file') + '</div>');
+  h.push('<div class="two-col-list">' +
+    '<div>• 识别结果仅供辅助参考，不构成物种鉴定的权威结论</div>' +
+    '<div>• 涉及渔业管理、贸易结算、科学研究等场景，请以主管部门或专业机构结论为准</div>' +
+    '<div>• 模型为闭集分类，仅覆盖 23 类，分布外图像可能给出偏差结果</div>' +
+    '<div>• 上传图像仅用于本次识别，不用于模型训练、不用于对外展示</div>' +
+    '<div>• 原图默认留存 180 天，到期自动清理；识别结果与元数据长期保留</div>' +
+    '<div>• 不提供鱼体尺寸、重量估计，不做实时视频流识别与目标计数</div>' +
+    '</div></div>');
+
+  h.push(trace(['FR-UPLOAD-01','FR-RESULT-05','NFR-SEC-01','NFR-COMPAT-02','NFR-PERF-01'],
+    '页面范围：PRD 5.2 首页定义的元素（产品一句话说明、识别入口按钮、能力说明、物种覆盖数、使用须知）全部落位；' +
+    '物种清单取自附录 A，class_index 与 fish_N 等值对应。'));
+  return h.join('');
+}
+
+/* ===== 识别工作台  /recognize ===== */
+function viewRecognize(){
+  var h = [];
+  h.push('<div class="row-between"><div><h1 class="view-title">识别工作台</h1>' +
+    '<p class="view-sub">上传水下鱼类图像，系统完成预处理与模型推理后返回 Top-5 候选、置信度与物种介绍。' +
+    '识别过程与结果在同一页内完成，不做页面跳转。</p></div>');
+  if (!state.authed){
+    h.push('<div class="card card-tight" style="min-width:210px">' +
+      '<div class="muted">游客剩余试用次数</div>' +
+      '<div class="row" style="gap:6px;margin-top:5px">' +
+      '<b class="num" style="font-size:22px;color:' + (state.guestLeft > 0 ? 'var(--primary-600)' : 'var(--danger)') + '">' +
+      state.guestLeft + '</b><span class="muted">/ ' + CONFIG.guestQuota + ' 次</span>' +
+      (state.guestLeft <= 0 ? tag('额度已用尽', 'tag-danger', 'alert') : '') + '</div>' +
+      '<div class="muted mt8">注册后可保存识别记录</div></div>');
+  } else {
+    h.push('<div class="card card-tight" style="min-width:210px">' +
+      '<div class="muted">当前登录</div>' +
+      '<div style="font-weight:600;margin-top:3px">' + esc(state.me.nick || state.me.name) + '</div>' +
+      '<div class="muted mt8">识别记录将自动保存到历史</div></div>');
+  }
+  h.push('</div>');
+
+  /* 额度耗尽 / 上传错误提示 */
+  if (state.guestLeft <= 0 && !state.authed){
+    h.push('<div class="mt16"></div>');
+    h.push(alertBox('warn', '本次试用额度已用尽',
+      '游客累计可试用 ' + CONFIG.guestQuota + ' 次。注册后可继续使用识别、历史记录与导出功能。' +
+      '<div class="mt8 row"><button class="btn btn-primary btn-sm" data-act="go" data-route="register">立即注册</button>' +
+      '<button class="btn btn-sm" data-act="go" data-route="login">已有账号，去登录</button></div>'));
+  }
+  if (state.uploadErr){
+    h.push('<div class="mt16"></div>');
+    h.push(alertBox('err', '有文件未通过校验', esc(state.uploadErr)));
+  }
+
+  /* 上传区 */
+  h.push('<div class="card mt16">');
+  h.push('<div class="card-h"><div><h3>图像上传</h3>' +
+    '<p class="sub">格式、体积、数量三重校验在前端先执行，后端必须复校</p></div>' +
+    '<div class="row">' +
+    tag('jpg / jpeg / png / bmp', 'tag-info', 'image') +
+    tag('单张 ≤ 10 MB', 'tag-info', 'hdd') +
+    tag('单批 ≤ ' + CONFIG.batchLimit + ' 张', 'tag-info', 'layers') + '</div></div>');
+
+  if (QUEUE.length === 0){
+    h.push('<div class="drop" id="dropZone" data-act="pickFiles" role="button" tabindex="0" ' +
+      'aria-label="拖拽图像到此处，或点击选择文件">' +
+      '<span class="drop-ic">' + ic('upload', 'ic-lg') + '</span>' +
+      '<b>拖拽图像到此处，或点击选择文件</b>' +
+      '<span class="hint">松开鼠标即可上传 · 支持多选</span></div>');
+  } else {
+    h.push('<div class="drop" id="dropZone" data-act="pickFiles" role="button" tabindex="0" ' +
+      'style="padding:20px;min-height:auto" aria-label="继续添加图像">' +
+      '<span class="drop-ic">' + ic('plus', 'ic-lg') + '</span>' +
+      '<b>继续添加图像</b><span class="hint">拖拽到此处，或点击选择文件</span></div>');
+  }
+
+  h.push('<div class="rule mt12">' + ic('info', 'ic-sm') +
+    '<div>支持 <code>jpg</code> <code>jpeg</code> <code>png</code> <code>bmp</code>，' +
+    '单张不超过 <code>10 MB</code>，单次最多 <code>' + CONFIG.batchLimit + '</code> 张。' +
+    '以文件内容判定为主、扩展名为辅，二者不一致时以内容判定为准。</div></div>');
+  h.push('</div>');
+
+  /* 预览与提交 */
+  h.push('<div class="card mt16">');
+  h.push('<div class="card-h"><div><h3>待识别队列</h3>' +
+    '<p class="sub">已选 ' + state.queue.length + ' / ' + CONFIG.batchLimit +
+    ' · 同批次内重复文件按内容哈希去重</p></div>' +
+    '<div class="row">' +
+    '<span class="tag ' + (state.queue.length ? 'tag-primary' : '') + '">已选 ' + state.queue.length +
+    ' / ' + CONFIG.batchLimit + '</span>' +
+    '<button class="btn btn-sm" data-act="clearQueue"' + (state.queue.length ? '' : ' disabled') + '>' +
+    ic('trash', 'ic-sm') + ' 清空</button></div></div>');
+
+  if (state.queue.length === 0){
+    h.push('<div class="empty" style="padding:34px 20px">' + ic('layers', 'ic-lg') +
+      '<b>队列为空</b><p>从上方上传区拖入或选择图像后，缩略图会出现在这里</p></div>');
+  } else {
+    h.push('<div class="thumbs">');
+    for (var i = 0; i < state.queue.length; i++){
+      var q = state.queue[i];
+      h.push('<div class="thumb' + (q.ok ? '' : ' err') + '">' +
+        fishImg('fish_' + (i + 1), 'cell-thumb', q.name) +
+        '<button class="del" data-act="removeFile" data-idx="' + i + '" aria-label="移除 ' + esc(q.name) + '">' +
+        ic('x', 'ic-sm') + '</button>' +
+        '<div class="nm" title="' + esc(q.name) + '">' + esc(truncMid(q.name, 40)) +
+        ' · ' + esc(q.size) + '</div>' +
+        (q.ok ? '' : '<div class="bad">' + esc(q.err) + '</div>') +
+        '</div>');
+    }
+    h.push('</div>');
+  }
+
+  h.push('<div class="row-between mt16">');
+  h.push('<div class="row">' +
+    '<button class="btn btn-primary" data-act="startRecognize"' +
+    (state.queue.length === 0 || state.batchRunning ? ' disabled' : '') + '>' +
+    (state.batchRunning ? ic('refresh', 'ic-sm') + ' 识别中…'
+      : ic('play', 'ic-sm') + ' 开始识别' + (state.queue.length > 1 ? '（' + state.queue.length + ' 张）' : '')) +
+    '</button>' +
+    '<button class="btn" data-act="go" data-route="recognize">' + ic('refresh', 'ic-sm') + ' 重新选择</button>' +
+    '</div>');
+  h.push('<div class="muted">' +
+    (state.authed ? '识别结果将自动保存至历史记录' : '游客识别结果不写入历史记录，注册后可保存') +
+    '</div>');
+  h.push('</div>');
+
+  /* 批量进度 */
+  if (state.batchRunning){
+    h.push('<div class="mt16"></div>');
+    var pct = Math.round(state.batchCur / Math.max(1, state.queue.length) * 100);
+    h.push('<div class="card card-tight" style="border-color:var(--primary-100);background:var(--primary-50)">' +
+      '<div class="row-between"><div class="row">' + ic('refresh', 'ic-sm') +
+      '<b>正在识别 ' + state.batchCur + ' / ' + state.queue.length + '</b>' +
+      '<span class="muted-2">按提交顺序逐张处理，已完成的结果会依次填充</span></div>' +
+      '<span class="num muted-2">' + pct + '%</span></div>' +
+      '<div class="progress mt12"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="stages mt12">' +
+      '<span class="stage done"><span class="dot">' + ic('check', 'ic-sm') + '</span>预处理</span>' +
+      '<span class="stage-line"></span>' +
+      '<span class="stage cur"><span class="dot">2</span>模型推理</span>' +
+      '<span class="stage-line"></span>' +
+      '<span class="stage"><span class="dot">3</span>结果整理</span>' +
+      '</div></div>');
+  }
+  h.push('</div>');
+
+  /* 结果区 */
+  h.push('<div class="mt16"></div>');
+  h.push(resultSection(false));
+
+  h.push(trace(['FR-UPLOAD-01','FR-UPLOAD-02','FR-UPLOAD-03','FR-UPLOAD-04','FR-UPLOAD-05',
+      'FR-UPLOAD-06','FR-UPLOAD-07','FR-UPLOAD-08','FR-RECOG-01','FR-RECOG-02','FR-RECOG-03',
+      'FR-RECOG-04','FR-RECOG-05','FR-RECOG-06','FR-RESULT-01','FR-RESULT-02','FR-RESULT-03',
+      'FR-RESULT-04','FR-RESULT-05','FR-RESULT-06','FR-USER-06','BR-UPLOAD-01','BR-UPLOAD-02',
+      'BR-UPLOAD-03','BR-UPLOAD-04','BR-UPLOAD-05','BR-UPLOAD-07','BR-UPLOAD-08','BR-RECOG-04',
+      'BR-RECOG-09','BR-RESULT-01','BR-RESULT-02','BR-RESULT-03','BR-RESULT-04','BR-RESULT-05','BR-RESULT-07'],
+    '拖拽/点击两种上传方式共用同一「选择文件」入口（原型以按钮模拟系统文件选择器）；' +
+    '格式、体积、数量三重校验与部分成功原则在交互中可点开验证；游客额度以服务端会话计数，清空本地存储无法重置。'));
+  return h.join('');
+}
+</script>
+<script>
+/* ===== 结果区（识别工作台内嵌 / 历史详情复用；PRD 4.4 + 5.3.2） ===== */
+function resultSection(forHistory){
+  var h = [];
+  var sp = SPECIES[state.resultSpIdx] || SPECIES[0];
+  var conf = state.resultConf;
+  var isLow = conf < CONFIG.lowConfThreshold;
+
+  h.push('<div class="card">');
+  h.push('<div class="card-h"><div><h3>' + (forHistory ? '识别结果（归档）' : '识别结果') + '</h3>' +
+    '<p class="sub">' + (forHistory ? '读取归档结果，不触发重新推理，同一记录结果恒定'
+      : '单张识别完成后就地展开，无需二次点击') + '</p></div>' +
+    '<div class="row">' + tag('耗时 ' + state.resultMs + ' ms', '', 'clock') +
+    tag('Top-5 恒为 5 项', 'tag-info', 'chart') + '</div></div>');
+
+  /* 低置信度提示条：结果区最顶部 */
+  if (isLow){
+    h.push(alertBox('warn', '结果可靠性不足，建议结合其他资料判断',
+      '首位候选置信度 <b class="num">' + fmtPct(conf) + '</b> 低于系统阈值 <b class="num">' +
+      CONFIG.lowConfThreshold.toFixed(2) + '</b>，该判定可靠性不足。模型为 23 类闭集分类，' +
+      '当图像模糊、目标遮挡、光照异常或拍摄对象不属于本系统覆盖的类别时，识别结果可能出现偏差。'));
+    h.push('<div class="mt12"></div>');
+  }
+
+  /* 左右分栏：左侧原图，右侧结论 */
+  h.push('<div class="split">');
+
+  /* 左：原图区 */
+  h.push('<div>');
+  h.push('<div class="row-between" style="margin-bottom:8px"><span class="muted">原图对照</span>' +
+    '<button class="btn btn-sm" data-act="togglePreproc">' + ic('sliders', 'ic-sm') +
+    (state.showPreproc ? ' 隐藏预处理后图像' : ' 查看预处理后图像') + '</button></div>');
+  h.push(fishImg(sp.d, 'orig-img', sp.cn + ' 原始图像'));
+  h.push('<div class="mt8 muted">图像标识 ' + esc(truncMid('7f3a1c9e-2b4d-4e88-9a01-5c6d7e8f9a0b', 26)) +
+    ' · 原始文件名仅用于界面展示，存储层使用系统生成的 UUID</div>');
+  if (state.showPreproc){
+    h.push('<div class="card card-tight mt12" style="background:var(--surface-2)">' +
+      '<div class="row-between"><b style="font-size:13px">预处理后图像（模型实际输入）</b>' +
+      tag('224 × 224 · CHW', 'tag-info', 'cpu') + '</div>' +
+      '<div class="mt8" style="display:flex;justify-content:center">' +
+      '<div style="width:160px;height:160px;border:1px solid var(--border);border-radius:var(--radius);' +
+      'background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--text-3);' +
+      'font-size:12px">224×224<br>短边等比缩放 + 中心裁剪</div></div>' +
+      '<div class="mt12"><div class="kv"><span class="k">色偏校正</span><span class="v">灰度世界白平衡 + CLAHE（clipLimit 2.0，tileGridSize 8×8）</span></div>' +
+      '<div class="kv"><span class="k">归一化均值</span><span class="v" style="font-family:var(--mono)">[0.485, 0.456, 0.406]</span></div>' +
+      '<div class="kv"><span class="k">归一化标准差</span><span class="v" style="font-family:var(--mono)">[0.229, 0.224, 0.225]</span></div>' +
+      '<div class="kv"><span class="k">张量形状</span><span class="v" style="font-family:var(--mono)">1 × 3 × 224 × 224</span></div></div>' +
+      '<div class="mt8 muted">训练期与推理期共用同一份预处理实现与参数配置，推理期不启用任何随机增强。</div></div>');
+  }
+  h.push('</div>');
+
+  /* 右：结论区 */
+  h.push('<div>');
+  h.push('<div class="result-hero">' +
+    '<div class="lead">首位判定 · TOP-1</div>' +
+    '<h2>' + esc(sp.cn) + (sp.i === 17 ? ' <span class="tag tag-warn" style="vertical-align:middle">科级</span>' : '') + '</h2>' +
+    '<div class="latin">' + esc(sp.la) + '</div>' +
+    '<div class="conf"><b class="num">' + fmtPct(conf) + '</b>' +
+    '<span>置信度' + (isLow ? '（低于阈值 ' + CONFIG.lowConfThreshold.toFixed(2) + '）' : '') + '</span></div>' +
+    '</div>');
+
+  /* Top-5 条形图：条形长度按绝对概率线性映射 */
+  h.push('<div class="card card-tight mt12"><div class="row-between" style="margin-bottom:11px">' +
+    '<b style="font-size:13.5px">Top-5 概率分布</b>' +
+    '<span class="muted">条形按绝对概率线性映射，非相对最大值</span></div>');
+  h.push('<div class="bars">');
+  var top5 = top5For(state.resultSpIdx, conf);
+  for (var i = 0; i < top5.length; i++){
+    var c = top5[i];
+    var w = Math.max(1, Math.min(100, c.p * 100));
+    if (c.p > 0 && c.p < 0.0005) w = 1;
+    h.push('<div class="bar-row' + (i === 0 ? ' bar-top' : '') + '">' +
+      '<div class="bar-name" title="' + esc(c.cn + ' ' + c.la) + '">' +
+      (i === 0 ? '<b>' + esc(c.cn) + '</b>' : esc(c.cn)) + '</div>' +
+      '<div class="bar-track"><i class="bar-fill" style="width:' + w.toFixed(1) + '%"></i></div>' +
+      '<div class="bar-pct num">' + fmtPct(c.p) + '</div></div>');
+  }
+  h.push('</div>');
+  h.push('<div class="mt12 muted">首位使用产品主色填充并加粗，其余 4 条使用中性灰蓝色；' +
+    '概率保留 1 位小数，四舍五入为 0.0% 时显示为「&lt; 0.1%」。</div>');
+  h.push('</div>');
+
+  /* 物种介绍：三个折叠面板 */
+  h.push('<div class="mt12">');
+  var panels = [
+    {k:'morph', t:'形态特征', body:sp.morph},
+    {k:'habit', t:'生活习性与食性', body:sp.habit},
+    {k:'dist',  t:'地理分布与栖息水层', body:sp.dist}
+  ];
+  for (var pi = 0; pi < panels.length; pi++){
+    var pn = panels[pi];
+    var open = !!state.folded[pn.k];
+    h.push('<div class="fold"><button class="fold-h" data-act="toggleFold" data-key="' + pn.k + '" ' +
+      'aria-expanded="' + (open ? 'true' : 'false') + '">' +
+      '<span>' + ic('book_open', 'ic-sm') + ' ' + esc(pn.t) + '</span>' +
+      ic(open ? 'chev_up' : 'chev_down', 'ic-sm') + '</button>');
+    if (open) h.push('<div class="fold-b"><p>' + esc(pn.body) + '</p></div>');
+    h.push('</div>');
+  }
+  h.push('<div class="muted">物种介绍取自预置知识库（23 类静态文案，人工校核）；' +
+    '字段缺失时展示「该物种介绍资料补充中」，不阻断识别结果展示。</div>');
+  h.push('</div>');
+
+  /* 快捷操作 */
+  h.push('<div class="row mt12">' +
+    '<button class="btn btn-sm" data-act="reRecognize">' + ic('refresh', 'ic-sm') + ' 重新识别</button>' +
+    (forHistory
+      ? '<button class="btn btn-sm" data-act="go" data-route="history">' + ic('history', 'ic-sm') + ' 返回历史列表</button>'
+      : (state.authed
+        ? '<button class="btn btn-sm" data-act="go" data-route="history">' + ic('history', 'ic-sm') + ' 查看历史详情</button>'
+        : '<button class="btn btn-sm btn-primary" data-act="go" data-route="register">' + ic('user', 'ic-sm') +
+          ' 注册后可保存记录</button>')) +
+    '</div>');
+  h.push('</div>');
+  h.push('</div>');
+
+  /* 免责声明：常驻、不可折叠、不可隐藏，字号 ≥ 12px */
+  h.push('<div class="disclaimer mt16">' + ic('shield') +
+    '<div><b>免责声明</b><br>本系统基于深度学习模型对 23 类海洋鱼类进行识别，识别结果仅供参考，' +
+    '不构成物种鉴定的权威结论。当图像模糊、目标遮挡、光照异常，或拍摄对象不属于本系统覆盖的 23 个类别时，' +
+    '识别结果可能出现偏差。涉及渔业管理、贸易结算、科学研究等场景，请以主管部门或专业机构的鉴定结论为准。' +
+    '<span class="muted">（此声明在结果区底部常驻可见，不可折叠、不可隐藏）</span></div></div>');
+
+  h.push('</div>');
+  return h.join('');
+}
+
+/* 按首位类别与置信度构造 Top-5，剩余概率按降序分配到其余类别 */
+function top5For(spIdx, conf){
+  var out = [{cn:SPECIES[spIdx].cn, la:SPECIES[spIdx].la, p:conf}];
+  var pool = [0.028, 0.019, 0.011, 0.0067, 0.0042, 0.0029, 0.0018, 0.0011];
+  var rest = 0, i;
+  for (i = 0; i < pool.length; i++) rest += pool[i];
+  var scale = (1 - conf) / rest;
+  var taken = {0:true}, idx = 0;
+  for (i = 1; i < 5; i++){
+    var p = pool[i - 1] * scale;
+    while (taken[idx]) idx++;
+    out.push({cn:SPECIES[idx].cn, la:SPECIES[idx].la, p:p});
+    taken[idx] = true;
+    idx++;
+  }
+  /* 用同批首位类别之外的相邻类别填充剩余候选 */
+  var cands = [];
+  for (i = 0; i < SPECIES.length; i++) if (i !== spIdx) cands.push(i);
+  var seed = (spIdx * 7 + 3) % cands.length;
+  var picked = [spIdx];
+  for (i = 0; i < 4; i++) picked.push(cands[(seed + i * 5) % cands.length]);
+  var uniq = [];
+  for (i = 0; i < picked.length; i++) if (uniq.indexOf(picked[i]) < 0) uniq.push(picked[i]);
+  var k = 1;
+  while (uniq.length < 5){
+    var nxt = cands[(seed + k * 3) % cands.length];
+    if (uniq.indexOf(nxt) < 0) uniq.push(nxt);
+    k++;
+  }
+  var res = [{cn:SPECIES[uniq[0]].cn, la:SPECIES[uniq[0]].la, p:conf}];
+  for (i = 1; i < 5; i++){
+    var pv = pool[i - 1] * scale;
+    res.push({cn:SPECIES[uniq[i]].cn, la:SPECIES[uniq[i]].la, p:pv});
+  }
+  /* 归一化，保证 5 项之和与 1 一致（浮点误差 < 1e-6） */
+  var s = 0;
+  for (i = 0; i < res.length; i++) s += res[i].p;
+  var diff = 1 - s;
+  res[1].p += diff * 0.6;
+  res[2].p += diff * 0.25;
+  res[3].p += diff * 0.1;
+  res[4].p += diff * 0.05;
+  return res;
+}
+
+/* ===== 关于与免责  /about ===== */
+function viewAbout(){
+  var h = [];
+  h.push('<h1 class="view-title">关于与免责</h1>');
+  h.push('<p class="view-sub">本页完整呈现模型能力边界、23 类覆盖范围、识别结果使用声明与数据隐私说明。' +
+    '涉及鉴定结论的场景，请以主管部门或专业机构的判定为准。</p>');
+
+  /* 完整免责声明 */
+  h.push('<div class="card"><div class="card-h"><h3>识别结果使用声明</h3>' +
+    tag('任务书 6.1', 'tag-info', 'file') + '</div>');
+  h.push('<div class="disclaimer">' + ic('shield') +
+    '<div>本系统基于深度学习模型对 23 类海洋鱼类进行识别，识别结果仅供参考，不构成物种鉴定的权威结论。' +
+    '当图像模糊、目标遮挡、光照异常，或拍摄对象不属于本系统覆盖的 23 个类别时，识别结果可能出现偏差。' +
+    '涉及渔业管理、贸易结算、科学研究等场景，请以主管部门或专业机构的鉴定结论为准。</div></div>');
+  h.push('</div>');
+
+  /* 能力边界 */
+  h.push('<div class="card mt16"><div class="card-h"><div><h3>模型适用范围与局限性</h3>' +
+    '<p class="sub">以下边界在开发与评审中必须明确保留，不得以「尽力而为」方式绕过</p></div></div>');
+  h.push('<div class="grid-2">');
+  h.push('<div class="alert alert-success">' + ic('check_circle') +
+    '<div><b>模型能做什么</b><div class="mt8" style="line-height:1.75">' +
+    '• 对 23 类海洋鱼类完成闭集细粒度分类<br>' +
+    '• 输出全部 23 类的概率分布与 Top-5 候选<br>' +
+    '• 输出首位候选置信度，并据阈值判定可靠性<br>' +
+    '• 关联预置知识库，给出形态、习性与分布介绍</div></div></div>');
+  h.push('<div class="alert alert-warn">' + ic('alert') +
+    '<div><b>模型不能做什么</b><div class="mt8" style="line-height:1.75">' +
+    '• 不覆盖 23 类之外的物种，无「未知物种」输出类别<br>' +
+    '• 不做实时视频流识别与多物种同框计数<br>' +
+    '• 不提供鱼体尺寸、重量或年龄估计<br>' +
+    '• 不提供模型关注区域（热力图）可视化<br>' +
+    '• 不替代专业机构的物种鉴定结论</div></div></div>');
+  h.push('</div></div>');
+
+  /* 关键指标 */
+  h.push('<div class="card mt16"><div class="card-h"><div><h3>模型指标与达成路径</h3>' +
+    '<p class="sub">两项硬指标由第 7 章模型方案保障，门槛校验方法见第 10.4 节</p></div></div>');
+  h.push('<div class="grid-4">' +
+    statCard('总体准确率', '≥ 85%', '测试集整体判定正确比例') +
+    statCard('平均宏观 F1', '≥ 0.82', '各类 F1 算术平均，不按样本量加权') +
+    statCard('端到端耗时', '≤ 3 s', 'GPU 优先，CPU 可降级') +
+    statCard('量化精度回退', '≤ 1 pp', '超出则放弃量化（第 7.5 节）') +
+    '</div>');
+  h.push('<div class="mt16"></div>');
+  h.push('<div class="row-between"><b style="font-size:13.5px">端到端 3 秒的耗时分解</b>' +
+    '<span class="muted">合计 3000 ms</span></div>');
+  var segs = [
+    {k:'上传', v:200}, {k:'预处理', v:200}, {k:'模型推理', v:2000}, {k:'落库', v:300}, {k:'网络与渲染', v:300}
+  ];
+  var colors = ['#94A3B8','#0E7C86','#0B626A','#64748B','#CBD5E1'];
+  h.push('<div class="mt12" style="display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--border)">');
+  for (var i = 0; i < segs.length; i++){
+    h.push('<div title="' + segs[i].k + ' ' + segs[i].v + ' ms" style="width:' + (segs[i].v / 30) +
+      '%;background:' + colors[i] + ';display:flex;align-items:center;justify-content:center;color:#fff;' +
+      'font-size:11.5px;font-weight:500">' + segs[i].k + '</div>');
+  }
+  h.push('</div>');
+  h.push('<div class="row mt8">');
+  for (var j = 0; j < segs.length; j++){
+    h.push('<span class="tip-dot"><i style="width:9px;height:9px;border-radius:2px;background:' + colors[j] +
+      ';display:inline-block"></i>' + segs[j].k + ' ' + segs[j].v + ' ms</span>');
+  }
+  h.push('</div>');
+  h.push('</div>');
+
+  /* 数据隐私 */
+  h.push('<div class="card mt16"><div class="card-h"><div><h3>数据隐私与留存</h3>' +
+    '<p class="sub">安全要求与任务书 6.2 一致：传输加密、密码不可逆存储、数据用途受限</p></div>' +
+    tag('NFR-SEC-01 ~ 05', 'tag-info', 'lock') + '</div>');
+  h.push('<div class="table-wrap"><table class="tbl"><thead><tr>' +
+    '<th style="width:130px">维度</th><th>要求</th></tr></thead><tbody>');
+  var rows = [
+    ['传输安全', '全站强制 HTTPS，明文 HTTP 请求重定向至 HTTPS'],
+    ['密码存储', 'bcrypt 加盐哈希，cost ≥ 10；日志中不得出现密码或令牌'],
+    ['图像存储', '图像文件与数据库分离存放；文件名使用系统生成标识，不使用用户原始文件名'],
+    ['数据用途', '上传图像仅用于本次识别；不用于模型训练、不用于对外展示，除非获得用户显式授权'],
+    ['原图留存', '默认 ' + CONFIG.retentionDays + ' 天，到期自动清理；可在系统配置中调整'],
+    ['结果留存', '识别结果与元数据长期保留，用于用户自身的历史回溯'],
+    ['账号注销', '注销后 30 天内完成个人数据清理，清理完成前账号不可恢复'],
+    ['导出范围', '用户仅能导出本人数据；管理员导出全部数据须记入操作日志'],
+    ['越权防护', '一切数据查询在服务端按登录身份过滤，前端隐藏不作为安全手段']
+  ];
+  for (var r = 0; r < rows.length; r++){
+    h.push('<tr><td style="font-weight:500">' + esc(rows[r][0]) + '</td><td class="muted-2">' +
+      esc(rows[r][1]) + '</td></tr>');
+  }
+  h.push('</tbody></table></div></div>');
+
+  /* 浏览器兼容 */
+  h.push('<div class="card mt16"><div class="card-h"><div><h3>浏览器兼容性</h3>' +
+    '<p class="sub">核心链路（上传 → 识别 → 结果 → 历史）在下列浏览器最新两个版本内无功能缺失</p></div>' +
+    tag('NFR-COMPAT-01', 'tag-info', 'compass') + '</div>');
+  h.push('<div class="grid-2">' +
+    ['Chrome（主要验证环境）','Edge（与 Chrome 同内核，合并验证）','Firefox（独立验证）',
+     'Safari 含移动端（重点验证文件上传与图表渲染）'].map(function(x){
+      return '<div class="card card-tight" style="box-shadow:none"><div class="row">' +
+        ic('check_circle', 'ic-sm') + '<div><div style="font-weight:500;font-size:13px">' +
+        esc(x.split('（')[0]) + '</div><div class="muted">' + esc(x.split('（')[1] || '') + '</div></div></div></div>';
+    }).join('') + '</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-RESULT-05','NFR-SEC-01','NFR-SEC-02','NFR-SEC-03','NFR-SEC-04','NFR-SEC-05',
+      'NFR-COMPAT-01','NFR-PERF-02','BR-RECOG-01'],
+    '页面范围：PRD 5.2 关于与免责页定义的元素（模型能力边界、23 类覆盖范围、使用声明、数据隐私说明）全部落位；' +
+    '免责声明全文照录 PRD 第 7.7.2 节文案，未作改写。'));
+  return h.join('');
+}
+</script>
+<script>
+/* ===== 登录  /login ===== */
+function viewLogin(){
+  var h = [];
+  h.push('<div style="max-width:460px;margin:26px auto 0">');
+  h.push('<div class="card">');
+  h.push('<div style="text-align:center;margin-bottom:20px">' +
+    '<span class="brand-mark" data-ic="fish" data-size="lg" style="margin:0 auto 12px;width:44px;height:44px"></span>' +
+    '<h2 style="margin:0;font-size:19px;font-weight:600">登录海瞳鱼鉴</h2>' +
+    '<p class="muted mt8">登录后可保存识别记录、查看历史与导出数据</p></div>');
+
+  if (state.loginLock){
+    h.push(alertBox('err', state.loginLock, '连续登录失败 5 次将锁定账号 10 分钟，锁定期内即使密码正确亦拒绝登录。'));
+    h.push('<div class="mt12"></div>');
+  } else if (state.loginErr){
+    h.push(alertBox('err', state.loginErr, '错误提示统一为「用户名或密码不正确」，不区分账号是否存在，以防止账号枚举攻击。'));
+    h.push('<div class="mt12"></div>');
+  }
+
+  h.push('<div class="field"><label for="lg-name">用户名<span class="req">*</span></label>' +
+    '<input class="inp" id="lg-name" type="text" autocomplete="username" placeholder="4 ～ 20 位字母、数字或下划线"' +
+    ' value="' + esc(state.loginForm.name) + '"></div>');
+  h.push('<div class="field"><label for="lg-pwd">密码<span class="req">*</span></label>' +
+    '<input class="inp" id="lg-pwd" type="password" autocomplete="current-password" placeholder="请输入密码"' +
+    ' value="' + esc(state.loginForm.pwd) + '"></div>');
+  h.push('<button class="btn btn-primary btn-block" data-act="doLogin">' + ic('key', 'ic-sm') + ' 登录</button>');
+
+  h.push('<div class="row-between mt16" style="font-size:13px">' +
+    '<span class="muted">还没有账号？<a data-act="go" data-route="register" href="#">立即注册</a></span>' +
+    '<span class="muted">不提供密码找回，登录后可修改密码</span></div>');
+
+  h.push('</div>');
+
+  h.push('<div class="card card-tight mt16" style="background:var(--surface-2)">' +
+    '<div class="row"><span class="sp-ic">' + ic('info', 'ic-sm') + '</span>' +
+    '<div><div style="font-size:13px;font-weight:500">原型演示账号</div>' +
+    '<div class="muted mt8">普通用户 <code style="font-family:var(--mono)">hyq2023</code> / ' +
+    '<code style="font-family:var(--mono)">Seatong@2026</code>　' +
+    '管理员 <code style="font-family:var(--mono)">admin</code> / <code style="font-family:var(--mono)">Admin@2026</code>' +
+    '<div class="mt8">JWT 双令牌：访问令牌 2 小时，刷新令牌 7 天；令牌仅通过 HTTPS 传输，禁止置于 URL 查询参数中。</div>' +
+    '</div></div></div></div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-02','FR-USER-03','BR-USER-06','BR-USER-07','BR-USER-15'],
+    '登录失败提示统一为「用户名或密码不正确」，不区分账号是否存在；连续失败 5 次锁定账号 10 分钟并提示剩余时间；' +
+    '访问令牌过期时静默刷新，刷新令牌亦失效则跳转登录页并保留原访问路径。'));
+  return h.join('');
+}
+
+/* ===== 注册  /register ===== */
+function pwdRules(p){
+  return {
+    len: p.length >= 8 && p.length <= 32,
+    mix: /[A-Za-z]/.test(p) && /\d/.test(p),
+    notName: !(p && state.regForm.name && p.toLowerCase() === state.regForm.name.toLowerCase())
+  };
+}
+function pwdStrength(p){
+  if (!p) return 0;
+  var s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Za-z]/.test(p) && /\d/.test(p)) s++;
+  if (p.length >= 12) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return Math.min(4, s);
+}
+function nameValid(n){ return /^[A-Za-z0-9_]{4,20}$/.test(n); }
+
+function viewRegister(){
+  var h = [];
+  var f = state.regForm;
+  var r = pwdRules(f.pwd);
+  var st = pwdStrength(f.pwd);
+  var nameTaken = f.name.toLowerCase() === 'admin' || f.name.toLowerCase() === 'hyq2023';
+
+  h.push('<div style="max-width:500px;margin:22px auto 0">');
+  h.push('<div class="card">');
+  h.push('<div style="text-align:center;margin-bottom:20px">' +
+    '<span class="brand-mark" data-ic="user" data-size="lg" style="margin:0 auto 12px;width:44px;height:44px"></span>' +
+    '<h2 style="margin:0;font-size:19px;font-weight:600">注册海瞳鱼鉴</h2>' +
+    '<p class="muted mt8">注册成功即自动登录，无需二次输入</p></div>');
+
+  /* 用户名 */
+  h.push('<div class="field"><label for="rg-name">用户名<span class="req">*</span></label>' +
+    '<input class="inp' + (state.regTouched.name && !nameValid(f.name) ? ' err' : '') + '" id="rg-name" type="text" ' +
+    'autocomplete="username" placeholder="4 ～ 20 位，仅字母、数字与下划线" value="' + esc(f.name) + '">');
+  if (state.regTouched.name){
+    if (!f.name) h.push('<div class="f-err">' + ic('alert', 'ic-sm') + '<span>请输入用户名</span></div>');
+    else if (f.name.length < 4 || f.name.length > 20) h.push('<div class="f-err">' + ic('alert', 'ic-sm') +
+      '<span>用户名长度需为 4 ～ 20 位，当前 ' + f.name.length + ' 位</span></div>');
+    else if (!nameValid(f.name)) h.push('<div class="f-err">' + ic('alert', 'ic-sm') +
+      '<span>用户名仅允许字母、数字与下划线</span></div>');
+    else if (nameTaken) h.push('<div class="f-err">' + ic('alert', 'ic-sm') +
+      '<span>该用户名已被占用，请更换一个（查重时不区分大小写）</span></div>');
+    else h.push('<div class="f-ok">' + ic('check_circle', 'ic-sm') + '<span>用户名可用</span></div>');
+  } else {
+    h.push('<div class="f-hint">查重时不区分大小写；用户名全局唯一，注册后不可修改</div>');
+  }
+  h.push('</div>');
+
+  /* 密码 */
+  h.push('<div class="field"><label for="rg-pwd">密码<span class="req">*</span></label>' +
+    '<input class="inp' + (state.regTouched.pwd && !(r.len && r.mix) ? ' err' : '') + '" id="rg-pwd" type="password" ' +
+    'autocomplete="new-password" placeholder="8 ～ 32 位，须同时包含字母与数字" value="' + esc(f.pwd) + '">');
+  if (f.pwd){
+    var pctW = [0, 25, 50, 75, 100][st];
+    var color = st <= 1 ? 'var(--danger)' : (st === 2 ? 'var(--warn)' : 'var(--success)');
+    h.push('<div class="pwd-meter"><i style="width:' + pctW + '%;background:' + color + '"></i></div>');
+  }
+  h.push('<ul class="rules-list">' +
+    '<li class="' + (r.len ? 'ok' : '') + '">' + ic(r.len ? 'check_circle' : 'x_circle', 'ic-sm') +
+    '<span>长度为 8 ～ 32 位</span></li>' +
+    '<li class="' + (r.mix ? 'ok' : '') + '">' + ic(r.mix ? 'check_circle' : 'x_circle', 'ic-sm') +
+    '<span>同时包含字母与数字</span></li>' +
+    '<li class="' + (r.notName ? 'ok' : '') + '">' + ic(r.notName ? 'check_circle' : 'x_circle', 'ic-sm') +
+    '<span>不与用户名相同</span></li>' +
+    '</ul>');
+  h.push('<div class="f-hint">强度不足时会给出具体原因，而非笼统提示。密码使用 bcrypt 加盐哈希存储，cost ≥ 10。</div>');
+  h.push('</div>');
+
+  /* 确认密码 */
+  h.push('<div class="field"><label for="rg-pwd2">确认密码<span class="req">*</span></label>' +
+    '<input class="inp' + (state.regTouched.pwd2 && f.pwd2 !== f.pwd ? ' err' : '') + '" id="rg-pwd2" type="password" ' +
+    'autocomplete="new-password" placeholder="请再次输入密码" value="' + esc(f.pwd2) + '">');
+  if (state.regTouched.pwd2 && f.pwd2 !== f.pwd){
+    h.push('<div class="f-err">' + ic('alert', 'ic-sm') + '<span>两次输入的密码不一致</span></div>');
+  }
+  h.push('</div>');
+
+  /* 邮箱 */
+  h.push('<div class="field"><label for="rg-mail">邮箱（选填）</label>' +
+    '<input class="inp" id="rg-mail" type="email" autocomplete="email" placeholder="用于联系与找回信息展示"' +
+    ' value="' + esc(f.email) + '">' +
+    '<div class="f-hint">不提供邮箱验证码校验；邮箱仅用于联系与找回信息展示，字段可为空</div></div>');
+
+  h.push('<button class="btn btn-primary btn-block" data-act="doRegister">' + ic('user', 'ic-sm') +
+    ' 注册并自动登录</button>');
+  h.push('<div class="row-between mt16" style="font-size:13px">' +
+    '<span class="muted">已有账号？<a data-act="go" data-route="login" href="#">去登录</a></span></div>');
+  h.push('</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-01','FR-USER-04','BR-USER-01','BR-USER-02','BR-USER-03','BR-USER-04',
+      'BR-USER-05','BR-USER-14'],
+    '用户名实时校验可用性与规则符合性；密码强度不足时给出具体原因（长度、字母数字组合、是否与用户名相同）；' +
+    '邮箱为选填项且不做验证码校验；提交成功后自动登录并进入识别工作台。'));
+  return h.join('');
+}
+
+/* ===== 历史记录  /history ===== */
+function filteredRecords(){
+  var f = state.historyFilters, out = [], i;
+  for (i = 0; i < RECORDS.length; i++){
+    var r = RECORDS[i];
+    if (f.sp !== 'all' && String(r.spIdx) !== String(f.sp)) continue;
+    if (f.kw && r.fn.toLowerCase().indexOf(f.kw.toLowerCase()) < 0) continue;
+    if (f.range === 'd7'){
+      if (r.t < '2026-09-14') continue;
+    } else if (f.range === 'd30'){
+      if (r.t < '2026-08-22') continue;
+    } else if (f.range === 'custom'){
+      if (f.from && r.t < f.from) continue;
+      if (f.to && r.t > f.to + ' 23:59:59') continue;
+    }
+    out.push(r);
+  }
+  out.sort(function(a, b){
+    return f.order === 'desc' ? (a.t < b.t ? 1 : -1) : (a.t > b.t ? 1 : -1);
+  });
+  return out;
+}
+function viewHistory(){
+  var h = [];
+  var f = state.historyFilters;
+  var list = filteredRecords();
+
+  h.push('<div class="row-between"><div><h1 class="view-title">历史记录</h1>' +
+    '<p class="view-sub">识别结果自动沉淀为可复用的数据资产。同一记录无论何时打开，展示的都是当时的判定结论，' +
+    '而非重新推理的结果。</p></div>' +
+    '<div class="row"><button class="btn" data-act="doExport">' + ic('download', 'ic-sm') + ' 导出 CSV</button>' +
+    '<button class="btn btn-primary" data-act="go" data-route="recognize">' + ic('upload', 'ic-sm') + ' 去识别</button>' +
+    '</div></div>');
+
+  h.push('<div class="grid-4 mt16">' +
+    statCard('记录总数', RECORDS.length + ' <span style="font-size:14px;color:var(--text-3)">条</span>', '仅本人记录，服务端强制过滤') +
+    statCard('低置信度记录', RECORDS.filter(function(x){ return x.low; }).length +
+      ' <span style="font-size:14px;color:var(--text-3)">条</span>', '首位置信度低于阈值 ' + CONFIG.lowConfThreshold.toFixed(2)) +
+    statCard('覆盖物种', new Set(RECORDS.map(function(x){ return x.spIdx; })).size +
+      ' <span style="font-size:14px;color:var(--text-3)">类</span>', '23 类闭集分类') +
+    statCard('平均耗时', Math.round(RECORDS.reduce(function(a, x){ return a + x.ms; }, 0) / RECORDS.length) +
+      ' <span style="font-size:14px;color:var(--text-3)">ms</span>', '目标 ≤ 3000 ms') +
+    '</div>');
+
+  /* 筛选区 */
+  h.push('<div class="card mt16">');
+  h.push('<div class="row-between" style="margin-bottom:12px"><b style="font-size:13.5px">筛选与检索</b>' +
+    '<button class="btn btn-sm" data-act="resetHistoryFilter">' + ic('refresh', 'ic-sm') + ' 重置筛选</button></div>');
+  h.push('<div class="grid-2">');
+  h.push('<div class="field" style="margin-bottom:0"><label for="hf-range">时间范围</label>' +
+    '<select class="inp" id="hf-range">' +
+    '<option value="all"' + (f.range === 'all' ? ' selected' : '') + '>全部时间</option>' +
+    '<option value="d7"' + (f.range === 'd7' ? ' selected' : '') + '>近 7 天</option>' +
+    '<option value="d30"' + (f.range === 'd30' ? ' selected' : '') + '>近 30 天</option>' +
+    '<option value="custom"' + (f.range === 'custom' ? ' selected' : '') + '>自定义起止日期</option>' +
+    '</select></div>');
+  h.push('<div class="field" style="margin-bottom:0"><label for="hf-sp">物种</label>' +
+    '<select class="inp" id="hf-sp"><option value="all"' + (f.sp === 'all' ? ' selected' : '') + '>全部物种（23 类）</option>');
+  for (var i = 0; i < SPECIES.length; i++){
+    h.push('<option value="' + i + '"' + (String(f.sp) === String(i) ? ' selected' : '') + '>' +
+      esc(SPECIES[i].cn) + '　' + esc(SPECIES[i].la) + '</option>');
+  }
+  h.push('</select></div>');
+  h.push('<div class="field" style="margin-bottom:0"><label for="hf-kw">文件名关键词</label>' +
+    '<input class="inp" id="hf-kw" type="text" placeholder="支持模糊匹配，如 IMG_22" value="' + esc(f.kw) + '"></div>');
+  h.push('<div class="field" style="margin-bottom:0"><label for="hf-order">排序</label>' +
+    '<select class="inp" id="hf-order">' +
+    '<option value="desc"' + (f.order === 'desc' ? ' selected' : '') + '>识别时间倒序（默认）</option>' +
+    '<option value="asc"' + (f.order === 'asc' ? ' selected' : '') + '>识别时间正序</option>' +
+    '</select></div>');
+  h.push('</div>');
+  if (f.range === 'custom'){
+    h.push('<div class="grid-2 mt12">' +
+      '<div class="field" style="margin-bottom:0"><label for="hf-from">起始日期</label>' +
+      '<input class="inp" id="hf-from" type="date" value="' + esc(f.from) + '"></div>' +
+      '<div class="field" style="margin-bottom:0"><label for="hf-to">结束日期</label>' +
+      '<input class="inp" id="hf-to" type="date" value="' + esc(f.to) + '"></div></div>');
+  }
+  h.push('<div class="mt12 muted">服务端分页，每页 20 条；导出列固定为 8 列，单次导出上限 5000 条；' +
+    '批量删除单次上限 100 条。时间存储为 UTC 时间戳，展示统一转换为 UTC+8。</div>');
+  h.push('</div>');
+
+  /* 批量操作条 */
+  if (state.historySel.length > 0){
+    h.push('<div class="bulkbar mt16">' +
+      '<b>已选 ' + state.historySel.length + ' 条</b>' +
+      '<button class="btn" data-act="goCompare" ' +
+      (state.historySel.length >= 2 && state.historySel.length <= 4 ? '' : 'disabled') + '>' +
+      ic('compare', 'ic-sm') + ' 对比（限 2 ～ 4 条）</button>' +
+      '<button class="btn" data-act="exportSelected">' + ic('download', 'ic-sm') + ' 导出选中</button>' +
+      '<button class="btn btn-danger" data-act="bulkDeleteHistory">' + ic('trash', 'ic-sm') + ' 删除</button>' +
+      '<button class="btn" data-act="clearHistorySel">取消选择</button>' +
+      '</div>');
+  }
+
+  /* 列表 */
+  h.push('<div class="card mt16" style="padding:0;overflow:hidden">');
+  if (list.length === 0){
+    var noAny = RECORDS.length === 0;
+    h.push(emptyBox('history', noAny ? '还没有识别记录' : '没有符合条件的记录',
+      noAny ? '完成一次识别后，记录会自动出现在这里' : '当前筛选条件下没有匹配的记录，可尝试放宽条件',
+      noAny ? '去识别' : '清除筛选条件', noAny ? 'goRecognize' : 'resetHistoryFilter'));
+  } else {
+    h.push('<div class="table-wrap" style="border:none;border-radius:0">');
+    h.push('<table class="tbl"><thead><tr>' +
+      '<th style="width:44px"><input type="checkbox" class="checkbox" data-act="selAllHistory" ' +
+      (state.historySel.length === list.length && list.length > 0 ? 'checked' : '') +
+      ' aria-label="全选当前页"></th>' +
+      '<th style="width:64px">缩略图</th><th>识别物种</th><th style="width:92px">置信度</th>' +
+      '<th>图像文件名</th><th style="width:150px">识别时间</th><th style="width:82px">耗时</th>' +
+      '<th style="width:112px">操作</th></tr></thead><tbody>');
+    for (var j = 0; j < list.length; j++){
+      var r = list[j], sp = SPECIES[r.spIdx];
+      var checked = state.historySel.indexOf(r.id) >= 0;
+      h.push('<tr class="clickable" data-act="openRecord" data-id="' + r.id + '">' +
+        '<td><input type="checkbox" class="checkbox" data-act="selHistory" data-id="' + r.id + '"' +
+        (checked ? ' checked' : '') + ' aria-label="选择该记录"></td>' +
+        '<td>' + thumbImg(r.img, sp.cn + ' 缩略图') + '</td>' +
+        '<td><div class="cell-name">' + esc(sp.cn) +
+        (r.low ? tag('低置信度', 'tag-warn', 'alert') : '') + '</div>' +
+        '<div class="muted" style="font-style:italic">' + esc(sp.la) + '</div></td>' +
+        '<td class="tnum" style="font-weight:500">' + r.conf.toFixed(1) + '%</td>' +
+        '<td><span title="' + esc(r.fn) + '">' + esc(truncMid(r.fn, 40)) + '</span></td>' +
+        '<td class="tnum muted-2">' + esc(r.t) + '</td>' +
+        '<td class="tnum muted-2">' + r.ms + '</td>' +
+        '<td><div class="row" style="gap:6px">' +
+        '<button class="btn btn-sm btn-ghost" data-act="openRecord" data-id="' + r.id + '">详情</button>' +
+        '<button class="btn btn-sm btn-ghost" data-act="openDeleteRecord" data-id="' + r.id + '" ' +
+        'style="color:var(--danger)" aria-label="删除记录">' + ic('trash', 'ic-sm') + '</button>' +
+        '</div></td></tr>');
+    }
+    h.push('</tbody></table></div>');
+    h.push('<div class="pager" style="padding:0 16px 14px">' +
+      '<span class="muted">共 ' + list.length + ' 条记录，每页 20 条，当前第 1 / 1 页</span>' +
+      '<div class="pgs">' +
+      '<button class="pg" disabled aria-label="上一页">' + ic('arrow_left', 'ic-sm') + '</button>' +
+      '<button class="pg on">1</button>' +
+      '<button class="pg" disabled aria-label="下一页">' + ic('arrow_right', 'ic-sm') + '</button>' +
+      '</div></div>');
+  }
+  h.push('</div>');
+
+  h.push(trace(['FR-HISTORY-01','FR-HISTORY-02','FR-HISTORY-03','FR-HISTORY-04',
+      'FR-HISTORY-05','FR-HISTORY-06','BR-HISTORY-01','BR-HISTORY-02','BR-HISTORY-03',
+      'BR-HISTORY-04','BR-HISTORY-05','BR-HISTORY-06','BR-HISTORY-07','BR-HISTORY-08',
+      'BR-HISTORY-09','BR-HISTORY-10','BR-USER-10'],
+    '列表字段、筛选条件、CSV 固定 8 列、分页 20 条/页均按 PRD 4.5.3 节规格落位；' +
+    '数据范围在服务端按登录身份强制过滤，越权访问返回 403 且不泄露记录是否存在；' +
+    '原图已过留存期时缩略图与结果数据仍在，原图位置展示「原图已清理」占位。'));
+  return h.join('');
+}
+
+/* ===== 历史详情  /history/:id ===== */
+function viewHistoryDetail(){
+  var rid = nyGet('detailId', RECORDS[0].id);
+  var r = null;
+  for (var i = 0; i < RECORDS.length; i++) if (RECORDS[i].id === rid) r = RECORDS[i];
+  if (!r) r = RECORDS[0];
+  var h = [];
+  h.push('<div class="row" style="margin-bottom:14px">' +
+    '<button class="btn btn-sm" data-act="go" data-route="history">' + ic('arrow_left', 'ic-sm') + ' 返回历史列表</button>' +
+    '</div>');
+  h.push('<h1 class="view-title">历史详情</h1>');
+  h.push('<p class="view-sub">展示归档结果，不触发重新推理。页面结构复用识别结果区组件，' +
+    '额外增加元信息区：识别时间、模型版本、识别耗时、原图文件名、记录编号。</p>');
+
+  /* 元信息区 */
+  h.push('<div class="card">');
+  h.push('<div class="card-h"><h3>记录元信息</h3>' +
+    '<div class="row">' + tag('结果恒定', 'tag-info', 'lock') +
+    tag(r.low ? '低置信度' : '常规结果', r.low ? 'tag-warn' : 'tag-success', r.low ? 'alert' : 'check_circle') + '</div></div>');
+  h.push('<div class="meta-grid">' +
+    '<div class="meta-item"><div class="k">记录编号</div><div class="v" style="font-family:var(--mono);font-size:12px">' +
+    esc(r.id) + '</div></div>' +
+    '<div class="meta-item"><div class="k">原图文件名</div><div class="v">' + esc(r.fn) + '</div></div>' +
+    '<div class="meta-item"><div class="k">识别时间</div><div class="v num">' + esc(r.t) + '</div></div>' +
+    '<div class="meta-item"><div class="k">识别耗时</div><div class="v num">' + r.ms + ' ms</div></div>' +
+    '<div class="meta-item"><div class="k">模型版本</div><div class="v" style="font-family:var(--mono);font-size:12px">' +
+    esc(r.model) + '</div></div>' +
+    '<div class="meta-item"><div class="k">设备</div><div class="v">CUDA · GPU 推理</div></div>' +
+    '</div></div>');
+
+  /* 结果区（复用组件） */
+  var bakSp = state.resultSpIdx, bakConf = state.resultConf, bakMs = state.resultMs;
+  state.resultSpIdx = r.spIdx; state.resultConf = r.conf / 100; state.resultMs = r.ms;
+  h.push('<div class="mt16"></div>');
+  h.push(resultSection(true));
+  state.resultSpIdx = bakSp; state.resultConf = bakConf; state.resultMs = bakMs;
+
+  /* 原图留存提示 */
+  h.push('<div class="mt16"></div>');
+  h.push(alertBox('info', '原图留存规则',
+    '原图默认留存 ' + CONFIG.retentionDays + ' 天，到期自动清理；识别结果与元数据永久保留。' +
+    '原图已清理时，本页原图位置展示「原图已清理」占位，Top-5 结果与物种介绍不受影响。' +
+    '原图不经静态目录直接暴露，一律经带鉴权的接口读取。'));
+
+  h.push(trace(['FR-HISTORY-03','FR-RESULT-01','FR-RESULT-02','FR-RESULT-03','FR-RESULT-04',
+      'FR-RESULT-05','FR-RESULT-06','BR-HISTORY-09','BR-RESULT-08','BR-RECOG-10'],
+    '对齐 BR-HISTORY-09：历史详情读取归档结果，不重新推理，保证同一记录结果恒定；' +
+    '页面数值全部来自归档数据，前端不自行计算或修正概率值（BR-RESULT-08）。'));
+  return h.join('');
+}
+</script>
+<script>
+/* ===== 对比视图  /history/compare ===== */
+function viewCompare(){
+  var sel = state.compareSel;
+  var h = [];
+  h.push('<div class="row" style="margin-bottom:14px">' +
+    '<button class="btn btn-sm" data-act="go" data-route="history">' + ic('arrow_left', 'ic-sm') + ' 返回历史列表</button>' +
+    '</div>');
+  h.push('<div class="row-between"><div><h1 class="view-title">图像对比</h1>' +
+    '<p class="view-sub">并排展示 2 ～ 4 条记录的缩略图、物种名、置信度与识别时间，用于横向核对同一批调查样本的判定结果。</p></div>' +
+    '<div class="row">' + tag('已选 ' + sel.length + ' 条', 'tag-primary', 'compare') +
+    '<button class="btn" data-act="go" data-route="history">重新选择</button></div></div>');
+
+  if (sel.length < 2){
+    h.push('<div class="card mt16">' + emptyBox('compare', '至少需要选择 2 条记录',
+      '在历史记录页勾选 2 ～ 4 条记录后进入对比视图', '返回历史记录', 'goHistory') + '</div>');
+  } else {
+    var cols = sel.length;
+    h.push('<div class="mt16" style="display:grid;gap:14px;grid-template-columns:minmax(0,1fr);' +
+      (cols >= 2 ? '' : '') + '">');
+    if (cols >= 2){
+      h.push('<style>.cmp{grid-template-columns:repeat(' + Math.min(cols, 4) + ',minmax(0,1fr))}' +
+        '@media (max-width:900px){.cmp{grid-template-columns:minmax(0,1fr)}}</style>');
+      h.push('<div class="cmp" style="display:grid;gap:14px">');
+      for (var i = 0; i < sel.length; i++){
+        var r = sel[i], sp = SPECIES[r.spIdx];
+        h.push('<div class="compare-card">' +
+          '<div class="hd">' + ic('fish', 'ic-sm') + '<span>' + esc(sp.cn) + '</span>' +
+          (r.low ? tag('低', 'tag-warn') : '') + '</div>' +
+          fishImg(r.img, '', sp.cn + ' 示例图像') +
+          '<div style="padding:12px">' +
+          '<div class="latin muted" style="font-style:italic;font-size:12px">' + esc(sp.la) + '</div>' +
+          '<div class="row-between mt12"><span class="muted">置信度</span>' +
+          '<b class="num" style="font-size:18px;color:' + (r.low ? 'var(--warn)' : 'var(--primary-600)') + '">' +
+          r.conf.toFixed(1) + '%</b></div>' +
+          '<div class="kv"><span class="k">识别时间</span><span class="v num" style="font-size:12px">' + esc(r.t) + '</span></div>' +
+          '<div class="kv"><span class="k">耗时</span><span class="v num">' + r.ms + ' ms</span></div>' +
+          '<div class="kv"><span class="k">文件名</span><span class="v" style="font-size:12px" title="' +
+          esc(r.fn) + '">' + esc(truncMid(r.fn, 18)) + '</span></div>' +
+          '<button class="btn btn-sm btn-block mt12" data-act="openRecord" data-id="' + r.id + '">查看详情</button>' +
+          '</div></div>');
+      }
+      h.push('</div>');
+    }
+    h.push('</div>');
+
+    /* 差异小结 */
+    h.push('<div class="card mt16"><div class="card-h"><h3>对比小结</h3>' +
+      tag('结果恒定，不重新推理', 'tag-info', 'lock') + '</div>');
+    var confs = sel.map(function(x){ return x.conf; });
+    var maxR = sel[confs.indexOf(Math.max.apply(null, confs))];
+    var minR = sel[confs.indexOf(Math.min.apply(null, confs))];
+    var lowN = sel.filter(function(x){ return x.low; }).length;
+    h.push('<div class="table-wrap"><table class="tbl"><thead><tr>' +
+      '<th>对比维度</th><th>结果</th></tr></thead><tbody>' +
+      '<tr><td>最高置信度</td><td>' + esc(SPECIES[maxR.spIdx].cn) + '　<b class="num">' +
+      maxR.conf.toFixed(1) + '%</b></td></tr>' +
+      '<tr><td>最低置信度</td><td>' + esc(SPECIES[minR.spIdx].cn) + '　<b class="num">' +
+      minR.conf.toFixed(1) + '%</b></td></tr>' +
+      '<tr><td>低置信度记录数</td><td>' + lowN + ' 条（阈值为 ' + CONFIG.lowConfThreshold.toFixed(2) + '）</td></tr>' +
+      '<tr><td>涉及物种数</td><td>' + new Set(sel.map(function(x){ return x.spIdx; })).size + ' 类</td></tr>' +
+      '</tbody></table></div>');
+    h.push('<div class="mt12 muted">对比视图仅做并列展示，不重新推理、不重算概率；' +
+      '所有数值均取自各记录归档时保存的结果。条形图同时标注数值，颜色不作为唯一信息载体。</div>');
+    h.push('</div>');
+  }
+
+  h.push(trace(['FR-HISTORY-04','BR-HISTORY-09','BR-RESULT-08'],
+    '勾选 2 ～ 4 条记录进入对比视图，并排展示缩略图、物种名、置信度与识别时间；' +
+    '少于 2 条或多于 4 条时给出明确限制提示，不做静默截断。'));
+  return h.join('');
+}
+
+/* ===== 个人中心  /profile ===== */
+function viewProfile(){
+  var h = [];
+  var p = state.profileForm;
+  h.push('<h1 class="view-title">个人中心</h1>');
+  h.push('<p class="view-sub">管理账号信息与登录密码。用户名注册后不可修改；' +
+    '修改密码需验证原密码，成功后全部令牌失效，须重新登录。</p>');
+
+  h.push('<div class="grid-4">' +
+    statCard('我的识别记录', state.me.cnt + ' <span style="font-size:14px;color:var(--text-3)">条</span>', '仅本人可见') +
+    statCard('账号角色', esc(state.me.role === 'admin' ? '管理员' : '注册用户'), state.me.role === 'admin' ? '含用户与记录管理权限' : '享有全部业务功能') +
+    statCard('注册时间', '<span style="font-size:16px">' + esc(state.me.reg || nowStr().slice(0, 10)) + '</span>', '账号创建时间') +
+    statCard('令牌有效期', '2 h / 7 d', '访问令牌 2 小时，刷新令牌 7 天') +
+    '</div>');
+
+  h.push('<div class="split mt16">');
+
+  /* 左：个人信息 */
+  h.push('<div class="card"><div class="card-h"><h3>账号信息</h3>' +
+    '<button class="btn btn-sm" data-act="saveProfile">' + ic('check', 'ic-sm') + ' 保存修改</button></div>');
+  h.push('<div class="field"><label for="pf-name">用户名（不可修改）</label>' +
+    '<input class="inp" id="pf-name" type="text" value="' + esc(state.me.name) + '" readonly></div>');
+  h.push('<div class="field"><label for="pf-nick">昵称<span class="req">*</span></label>' +
+    '<input class="inp' + (state.profileErr.nick ? ' err' : '') + '" id="pf-nick" type="text" ' +
+    'placeholder="2 ～ 20 字符" value="' + esc(p.nick) + '">' +
+    (state.profileErr.nick ? '<div class="f-err">' + ic('alert', 'ic-sm') + '<span>' +
+      esc(state.profileErr.nick) + '</span></div>'
+      : '<div class="f-hint">昵称长度 2 ～ 20 字符，修改后刷新页面仍然保留</div>') + '</div>');
+  h.push('<div class="field"><label for="pf-mail">邮箱</label>' +
+    '<input class="inp' + (state.profileErr.email ? ' err' : '') + '" id="pf-mail" type="email" ' +
+    'placeholder="字段可为空" value="' + esc(p.email) + '">' +
+    (state.profileErr.email ? '<div class="f-err">' + ic('alert', 'ic-sm') + '<span>' +
+      esc(state.profileErr.email) + '</span></div>'
+      : '<div class="f-hint">邮箱须通过格式校验，字段可为空；不提供邮箱验证码校验</div>') + '</div>');
+  h.push('<div class="mt12 muted">账号相关操作会写入操作日志；日志不含密码、令牌与图像内容。</div>');
+  h.push('</div>');
+
+  /* 右：修改密码 + 退出 */
+  h.push('<div>');
+  h.push('<div class="card"><div class="card-h"><h3>修改密码</h3>' +
+    tag('需验证原密码', '', 'lock') + '</div>');
+  h.push('<div class="field"><label for="pw-old">原密码<span class="req">*</span></label>' +
+    '<input class="inp' + (state.pwdErr.old ? ' err' : '') + '" id="pw-old" type="password" ' +
+    'autocomplete="current-password" placeholder="请输入当前密码" value="' + esc(state.pwdForm.old) + '">' +
+    (state.pwdErr.old ? '<div class="f-err">' + ic('alert', 'ic-sm') + '<span>' + esc(state.pwdErr.old) +
+      '</span></div>' : '') + '</div>');
+  h.push('<div class="field"><label for="pw-nw">新密码<span class="req">*</span></label>' +
+    '<input class="inp' + (state.pwdErr.nw ? ' err' : '') + '" id="pw-nw" type="password" ' +
+    'autocomplete="new-password" placeholder="8 ～ 32 位，须同时包含字母与数字" value="' + esc(state.pwdForm.nw) + '">' +
+    (state.pwdErr.nw ? '<div class="f-err">' + ic('alert', 'ic-sm') + '<span>' + esc(state.pwdErr.nw) +
+      '</span></div>' : '') + '</div>');
+  h.push('<div class="field"><label for="pw-nw2">确认新密码<span class="req">*</span></label>' +
+    '<input class="inp' + (state.pwdErr.nw2 ? ' err' : '') + '" id="pw-nw2" type="password" ' +
+    'autocomplete="new-password" placeholder="请再次输入新密码" value="' + esc(state.pwdForm.nw2) + '">' +
+    (state.pwdErr.nw2 ? '<div class="f-err">' + ic('alert', 'ic-sm') + '<span>' + esc(state.pwdErr.nw2) +
+      '</span></div>' : '') + '</div>');
+  h.push('<button class="btn btn-primary btn-block" data-act="doChangePwd">' + ic('key', 'ic-sm') + ' 确认修改</button>');
+  h.push('<div class="mt12 muted">修改成功后提示「密码已更新，请重新登录」并跳转登录页，' +
+    '同时使该用户全部既有令牌立即失效。</div>');
+  h.push('</div>');
+
+  h.push('<div class="card mt16"><div class="card-h"><h3>账号操作</h3></div>');
+  h.push('<div class="row">' +
+    '<button class="btn" data-act="go" data-route="history">' + ic('history', 'ic-sm') + ' 我的历史记录</button>' +
+    '<button class="btn btn-danger" data-act="doLogout">' + ic('logout', 'ic-sm') + ' 退出登录</button>' +
+    '</div>');
+  h.push('<div class="mt12 muted">登出操作使当前令牌立即失效，前端同时清除本地令牌。' +
+    '若存在未提交内容（如上传队列非空），登出前会二次确认。</div>');
+  h.push('</div>');
+  h.push('</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-03','FR-USER-04','FR-USER-05','BR-USER-08','BR-USER-14','BR-USER-15'],
+    '个人中心展示用户名（不可改）、昵称、邮箱、注册时间与本人识别记录总数；' +
+    '提供「修改昵称 / 邮箱」「修改密码」「退出登录」三个入口；' +
+    '昵称长度 2 ～ 20 字符、邮箱须通过格式校验，非法输入就地标红并给出具体原因。'));
+  return h.join('');
+}
+</script>
+<script>
+/* ===== 管理员 · 用户管理  /admin/users ===== */
+function viewAdminUsers(){
+  var h = [];
+  var kw = state.adminUserKw.toLowerCase();
+  var list = USERS.filter(function(u){
+    return !kw || u.name.toLowerCase().indexOf(kw) >= 0 || u.nick.toLowerCase().indexOf(kw) >= 0;
+  });
+  h.push('<h1 class="view-title">用户管理</h1>');
+  h.push('<p class="view-sub">管理员专属页面。管理员不可禁用或删除自身账号，避免管理权限丢失；' +
+    '每项操作均二次确认，并记入审计日志。</p>');
+  h.push(adminTabs(0));
+  h.push('<div class="grid-4">' +
+    statCard('用户总数', USERS.length + ' <span style="font-size:14px;color:var(--text-3)">个</span>', '含管理员账号') +
+    statCard('启用中', USERS.filter(function(u){ return u.status === 'on'; }).length + ' <span style="font-size:14px;color:var(--text-3)">个</span>', '可正常登录') +
+    statCard('已禁用', USERS.filter(function(u){ return u.status === 'off'; }).length + ' <span style="font-size:14px;color:var(--text-3)">个</span>', '既有令牌同步失效') +
+    statCard('识别记录总量', USERS.reduce(function(a, u){ return a + u.cnt; }, 0) + ' <span style="font-size:14px;color:var(--text-3)">条</span>', '全部用户记录') +
+    '</div>');
+
+  h.push('<div class="card mt16">');
+  h.push('<div class="row-between" style="margin-bottom:12px">' +
+    '<div class="row" style="flex:1"><input class="inp" id="au-kw" type="text" style="max-width:320px" ' +
+    'placeholder="按用户名或昵称搜索" value="' + esc(state.adminUserKw) + '"></div>' +
+    '<span class="muted">分页每页 20 条</span></div>');
+  h.push('<div class="table-wrap"><table class="tbl"><thead><tr>' +
+    '<th>用户名</th><th>昵称</th><th style="width:92px">状态</th><th>注册时间</th>' +
+    '<th style="width:86px">记录数</th><th style="width:170px">操作</th></tr></thead><tbody>');
+  for (var i = 0; i < list.length; i++){
+    var u = list[i];
+    var self = (u.name === state.me.name);
+    h.push('<tr>' +
+      '<td><div class="cell-name">' + esc(u.name) +
+      (u.role === 'admin' ? tag('管理员', 'tag-info', 'shield') : '') + '</div></td>' +
+      '<td>' + esc(u.nick) + '</td>' +
+      '<td>' + (u.status === 'on' ? tag('启用中', 'tag-on', 'check_circle') : tag('已禁用', 'tag-off', 'ban')) + '</td>' +
+      '<td class="tnum muted-2">' + esc(u.reg) + '</td>' +
+      '<td class="tnum">' + u.cnt + '</td>' +
+      '<td><div class="row" style="gap:6px">' +
+      '<button class="btn btn-sm" data-act="toggleUser" data-id="' + u.id + '"' + (self ? ' disabled' : '') + '>' +
+      (u.status === 'on' ? '禁用' : '启用') + '</button>' +
+      '<button class="btn btn-sm" data-act="openResetPwd" data-id="' + u.id + '">重置密码</button>' +
+      '</div></td></tr>');
+  }
+  if (list.length === 0){
+    h.push('<tr><td colspan="6">' + emptyBox('search', '没有匹配的用户',
+      '当前搜索条件下没有匹配的账号，请更换关键词', '清除搜索', 'clearAdminUserKw') + '</td></tr>');
+  }
+  h.push('</tbody></table></div>');
+  h.push('<div class="pager"><span class="muted">共 ' + list.length + ' 个账号，当前第 1 / 1 页</span>' +
+    '<div class="pgs"><button class="pg" disabled>' + ic('arrow_left', 'ic-sm') + '</button>' +
+    '<button class="pg on">1</button>' +
+    '<button class="pg" disabled>' + ic('arrow_right', 'ic-sm') + '</button></div></div>');
+  h.push('<div class="mt12 muted">重置密码生成一次性临时密码并要求首次登录后修改；' +
+    '该用户全部既有令牌立即失效。禁用账号同样使既有令牌立即失效。' +
+    '管理员不可对当前登录账号执行禁用或重置操作。</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-07','FR-USER-08','FR-USER-09','BR-USER-11','BR-USER-16','BR-USER-17','BR-USER-09'],
+    '管理员用户列表含用户名、昵称、状态、注册时间、记录数；操作列为启用 / 禁用与重置密码；' +
+    '每项操作二次确认；管理员不可禁用或删除自身账号（对应 AC-FR-USER-07-2）。'));
+  return h.join('');
+}
+
+/* ===== 管理员 · 记录管理  /admin/records ===== */
+function viewAdminRecords(){
+  var h = [];
+  var kw = state.adminRecKw.toLowerCase();
+  var list = RECORDS.filter(function(r){ return !kw || r.fn.toLowerCase().indexOf(kw) >= 0; });
+  h.push('<h1 class="view-title">记录管理</h1>');
+  h.push('<p class="view-sub">管理员可查看与删除任意用户的识别记录，不受数据范围限制；' +
+    '删除同样采用软删除，操作须记入审计日志。</p>');
+  h.push(adminTabs(1));
+  h.push('<div class="grid-4">' +
+    statCard('记录总量', RECORDS.length + ' <span style="font-size:14px;color:var(--text-3)">条</span>', '全部用户可见') +
+    statCard('低置信度', RECORDS.filter(function(x){ return x.low; }).length + ' <span style="font-size:14px;color:var(--text-3)">条</span>', '低于阈值 ' + CONFIG.lowConfThreshold.toFixed(2)) +
+    statCard('涉及用户', '6 <span style="font-size:14px;color:var(--text-3)">人</span>', '含普通用户与管理员') +
+    statCard('待物理清理', '0 <span style="font-size:14px;color:var(--text-3)">条</span>', '软删除后 30 天清理') +
+    '</div>');
+
+  h.push('<div class="card mt16">');
+  h.push('<div class="row-between" style="margin-bottom:12px">' +
+    '<div class="row" style="flex:1"><input class="inp" id="ar-kw" type="text" style="max-width:320px" ' +
+    'placeholder="按原图文件名搜索" value="' + esc(state.adminRecKw) + '"></div>' +
+    '<div class="row">' + tag('服务端强制数据范围过滤', 'tag-info', 'shield') + '</div></div>');
+  if (list.length === 0){
+    h.push(emptyBox('search', '没有符合条件的记录', '当前搜索条件下没有匹配的记录', '清除搜索', 'clearAdminRecKw'));
+  } else {
+    h.push('<div class="table-wrap"><table class="tbl"><thead><tr>' +
+      '<th style="width:64px">缩略图</th><th>识别物种</th><th style="width:90px">置信度</th>' +
+      '<th>原图文件名</th><th style="width:120px">归属用户</th><th style="width:150px">识别时间</th>' +
+      '<th style="width:84px">操作</th></tr></thead><tbody>');
+    var owners = ['hyq2023','reef_wang','fisher_li','ocean_kid','lab_zhang','hyq2023','reef_wang','lab_zhang'];
+    for (var i = 0; i < list.length; i++){
+      var r = list[i], sp = SPECIES[r.spIdx];
+      h.push('<tr><td>' + thumbImg(r.img, sp.cn + ' 缩略图') + '</td>' +
+        '<td><div class="cell-name">' + esc(sp.cn) +
+        (r.low ? tag('低', 'tag-warn') : '') + '</div>' +
+        '<div class="muted" style="font-style:italic">' + esc(sp.la) + '</div></td>' +
+        '<td class="tnum" style="font-weight:500">' + r.conf.toFixed(1) + '%</td>' +
+        '<td>' + esc(truncMid(r.fn, 36)) + '</td>' +
+        '<td class="muted-2">' + esc(owners[i % owners.length]) + '</td>' +
+        '<td class="tnum muted-2">' + esc(r.t) + '</td>' +
+        '<td><button class="btn btn-sm btn-ghost" style="color:var(--danger)" ' +
+        'data-act="openDeleteAdminRecord" data-id="' + r.id + '">' + ic('trash', 'ic-sm') + ' 删除</button></td></tr>');
+    }
+    h.push('</tbody></table></div>');
+    h.push('<div class="pager"><span class="muted">共 ' + list.length + ' 条记录，当前第 1 / 1 页</span>' +
+      '<div class="pgs"><button class="pg" disabled>' + ic('arrow_left', 'ic-sm') + '</button>' +
+      '<button class="pg on">1</button>' +
+      '<button class="pg" disabled>' + ic('arrow_right', 'ic-sm') + '</button></div></div>');
+  }
+  h.push('<div class="mt12 muted">越权防护：一切数据查询在服务端按登录身份过滤；' +
+    '普通用户访问他人记录返回 403，且不泄露该记录是否存在。</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-08','BR-HISTORY-01','BR-HISTORY-03','BR-USER-10','BR-USER-17','NFR-SEC-03'],
+    '管理员可查看并删除任意用户的识别记录，操作记入审计日志（对应 AC-FR-USER-08-1）；' +
+    '删除采用软删除，标记为已删除后立即从列表、筛选与导出结果中排除。'));
+  return h.join('');
+}
+
+/* ===== 管理员 · 系统配置  /admin/config ===== */
+function viewAdminConfig(){
+  var h = [];
+  var c = state.cfg;
+  h.push('<h1 class="view-title">系统配置</h1>');
+  h.push('<p class="view-sub">以表单形式编辑可配置项，每项附取值范围与默认值提示；保存前二次确认并列出变更项，保存后立即生效。</p>');
+  h.push(adminTabs(2));
+
+  h.push('<div class="split">');
+  h.push('<div class="card"><div class="card-h"><h3>可配置项</h3>' +
+    tag('配置项外部化，不硬编码', 'tag-info', 'file') + '</div>');
+
+  /* 置信度阈值 */
+  h.push('<div class="field"><label for="cf-th">置信度阈值　<span class="muted">取值范围 0.10 ～ 0.90，默认 0.40</span></label>' +
+    '<input class="inp num" id="cf-th" type="number" step="0.01" min="0.10" max="0.90" value="' + c.lowConfThreshold.toFixed(2) + '">' +
+    '<div class="f-hint">首位候选概率低于该值时判定为低置信度，结果照常返回并附可靠性提示（BR-RECOG-04）。' +
+    '调整后识别结果的低置信度判定随之改变（AC-FR-USER-09-1）。</div></div>');
+
+  /* 单批上限 */
+  h.push('<div class="field"><label for="cf-bl">单批上传上限　<span class="muted">取值范围 1 ～ 20，默认 9</span></label>' +
+    '<input class="inp num" id="cf-bl" type="number" step="1" min="1" max="20" value="' + c.batchLimit + '">' +
+    '<div class="f-hint">超出部分整体拒绝并提示分批上传，不做静默截断（BR-UPLOAD-03）。</div></div>');
+
+  /* 色偏校正开关 */
+  h.push('<div class="field"><label>水下色偏校正</label>' +
+    '<div class="switch' + (c.colorCorrect ? ' on' : '') + '" data-act="toggleColorCorrect" role="switch" ' +
+    'aria-checked="' + (c.colorCorrect ? 'true' : 'false') + '" tabindex="0">' +
+    '<span class="track"><span class="knob"></span></span>' +
+    '<span style="font-size:13.5px">' + (c.colorCorrect ? '已开启' : '已关闭') + '</span></div>' +
+    '<div class="f-hint">算法组合为灰度世界白平衡 + CLAHE（clipLimit 2.0，tileGridSize 8×8）。' +
+    '关闭后预处理输出与校正前基准一致（AC-FR-PREPROC-03-2）。该开关对同一图像幂等（BR-PREPROC-04）。</div></div>');
+
+  /* 留存天数 */
+  h.push('<div class="field"><label for="cf-rd">图像留存天数　<span class="muted">取值范围 30 ～ 365，默认 180</span></label>' +
+    '<input class="inp num" id="cf-rd" type="number" step="1" min="30" max="365" value="' + c.retentionDays + '">' +
+    '<div class="f-hint">到期自动清理原图；识别结果与元数据永久保留（BR-HISTORY-10）。</div></div>');
+
+  h.push('<div class="row">' +
+    '<button class="btn btn-primary" data-act="openSaveConfig">' + ic('check', 'ic-sm') + ' 保存配置</button>' +
+    '<button class="btn" data-act="resetConfig">' + ic('refresh', 'ic-sm') + ' 恢复默认值</button>' +
+    '</div>');
+  h.push('</div>');
+
+  /* 右：只读参数 */
+  h.push('<div>');
+  h.push('<div class="card"><div class="card-h"><div><h3>预处理参数（只读）</h3>' +
+    '<p class="sub">训练期与推理期必须共用同一份参数配置</p></div>' + tag('FR-PREPROC-05', 'tag-info', 'lock') + '</div>');
+  h.push('<div class="kv"><span class="k">目标尺寸</span><span class="v" style="font-family:var(--mono)">224 × 224</span></div>' +
+    '<div class="kv"><span class="k">缩放策略</span><span class="v">短边等比缩放 + 中心裁剪</span></div>' +
+    '<div class="kv"><span class="k">插值方式</span><span class="v">缩小 INTER_AREA / 放大 INTER_LINEAR</span></div>' +
+    '<div class="kv"><span class="k">通道顺序</span><span class="v" style="font-family:var(--mono)">BGR → RGB</span></div>' +
+    '<div class="kv"><span class="k">透明度处理</span><span class="v">丢弃 alpha，按白底合成</span></div>' +
+    '<div class="kv"><span class="k">EXIF 方向</span><span class="v">按 Orientation 自动旋转校正</span></div>' +
+    '<div class="kv"><span class="k">数值缩放</span><span class="v" style="font-family:var(--mono)">uint8 / 255 → float32</span></div>' +
+    '<div class="kv"><span class="k">均值</span><span class="v" style="font-family:var(--mono)">[0.485, 0.456, 0.406]</span></div>' +
+    '<div class="kv"><span class="k">标准差</span><span class="v" style="font-family:var(--mono)">[0.229, 0.224, 0.225]</span></div>' +
+    '<div class="kv"><span class="k">张量布局</span><span class="v" style="font-family:var(--mono)">1 × 3 × 224 × 224（CHW）</span></div>');
+  h.push('<div class="mt12 muted">参数以只读方式展示，避免误改。任何变更均需重新评估模型精度，' +
+    '并在第 7.5 节记录复测结果。推理期不得启用任何随机增强操作（BR-PREPROC-02）。</div>');
+  h.push('</div>');
+
+  h.push('<div class="card mt16"><div class="card-h"><h3>运行时信息</h3>' +
+    tag('NFR-REL-02 健康检查', 'tag-info', 'hdd') + '</div>');
+  h.push('<div class="kv"><span class="k">接口</span><span class="v" style="font-family:var(--mono)">GET /api/health</span></div>' +
+    '<div class="kv"><span class="k">模型加载状态</span><span class="v">' + tag('已加载', 'tag-on', 'check_circle') + '</span></div>' +
+    '<div class="kv"><span class="k">推理设备</span><span class="v">CUDA · GPU 优先，CPU 可降级</span></div>' +
+    '<div class="kv"><span class="k">模型版本</span><span class="v" style="font-family:var(--mono);font-size:12px">seatong-resnet18-v1.2.0</span></div>' +
+    '<div class="kv"><span class="k">服务端口</span><span class="v" style="font-family:var(--mono)">后端 8000 · 前端 5180</span></div>' +
+    '<div class="kv"><span class="k">接口前缀</span><span class="v" style="font-family:var(--mono)">/api</span></div>' +
+    '<div class="kv"><span class="k">环境变量前缀</span><span class="v" style="font-family:var(--mono)">SEATONG_</span></div>');
+  h.push('<div class="mt12 muted">模型常驻内存：服务启动时加载一次，全程单例复用，禁止每次请求重新加载模型文件（BR-RECOG-05）。' +
+    '模型文件缺失或损坏时服务启动阶段即失败并输出明确日志，运行期请求返回 503 与「识别服务暂不可用」。</div>');
+  h.push('</div>');
+  h.push('</div>');
+  h.push('</div>');
+
+  h.push(trace(['FR-USER-09','BR-USER-18','BR-RECOG-04','BR-PREPROC-02','BR-PREPROC-03',
+      'BR-PREPROC-04','BR-HISTORY-10','NFR-REL-02','NFR-MAINT-01'],
+    '可配置项及取值范围严格按 BR-USER-18：置信度阈值 0.10 ～ 0.90、单批上限 1 ～ 20、色偏校正开关、' +
+    '图像留存天数 30 ～ 365；保存前二次确认并列出变更前后取值（PRD 5.4.5）。'));
+  return h.join('');
+}
+
+/* ===== 404 ===== */
+function view404(){
+  var h = [];
+  h.push('<div class="card" style="max-width:560px;margin:40px auto;text-align:center">');
+  h.push('<div style="font-size:54px;font-weight:600;color:var(--primary-100);line-height:1">404</div>');
+  h.push('<h2 style="font-size:19px;font-weight:600;margin:12px 0 8px">页面不存在</h2>');
+  h.push('<p class="muted" style="margin:0 0 20px">该地址没有对应的页面。可能是链接输入有误，或页面已被移除。</p>');
+  h.push('<div class="row" style="justify-content:center">' +
+    '<button class="btn btn-primary" data-act="go" data-route="home">' + ic('home', 'ic-sm') + ' 返回首页</button>' +
+    '<button class="btn" data-act="go" data-route="recognize">' + ic('upload', 'ic-sm') + ' 去识别</button>' +
+    '</div></div>');
+  h.push(trace(['——'], 'PRD 5.2 页面清单中的兜底页面：提示文案与返回首页入口。'));
+  return h.join('');
+}
+
+/* ===== 管理员 Tabs ===== */
+function adminTabs(cur){
+  var items = [['用户管理','adminUsers'], ['记录管理','adminRecords'], ['系统配置','adminConfig']];
+  var routes = ['adminUsers','adminRecords','adminConfig'];
+  var out = '<div class="tabs">';
+  for (var i = 0; i < items.length; i++){
+    out += '<button class="tab' + (i === cur ? ' on' : '') + '" data-act="go" data-route="' + routes[i] + '">' +
+      esc(items[i][0]) + '</button>';
+  }
+  return out + '</div>';
+}
+</script>
+<script>
+/* ---------- 弹窗 ---------- */
+function openModal(title, body, footer, cls){
+  var root = document.getElementById('modal-root');
+  if (!root) return;
+  root.innerHTML = '<div class="mask" id="modalMask" role="dialog" aria-modal="true" aria-label="' +
+    esc(title) + '"><div class="dlg ' + (cls || '') + '">' +
+    '<div class="dlg-h"><h3>' + esc(title) + '</h3>' +
+    '<button class="icon-btn" data-act="closeModal" aria-label="关闭">' + ic('x') + '</button></div>' +
+    '<div class="dlg-b">' + body + '</div>' +
+    (footer ? '<div class="dlg-f">' + footer + '</div>' : '') + '</div></div>';
+  hydrateIcons(root);
+}
+function closeModal(){
+  var root = document.getElementById('modal-root');
+  if (root) root.innerHTML = '';
+}
+function modalConfirm(title, body, okLabel, act, extraData){
+  var data = extraData ? extraData : '';
+  openModal(title, body,
+    '<button class="btn" data-act="closeModal">取消</button>' +
+    '<button class="btn btn-primary" data-act="' + act + '"' + data + '>' + esc(okLabel) + '</button>', 'slim');
+}
+
+/* 额度耗尽引导注册（BR-USER-13：不在识别进行中弹出） */
+function modalQuota(){
+  openModal('试用额度已用尽',
+    '<p style="margin:0 0 12px">游客累计可试用 <b>' + CONFIG.guestQuota +
+    '</b> 次，当前额度已用尽。注册后即可继续识别，并获得历史记录、图像对比与 CSV 导出功能。</p>' +
+    '<div class="rules-list" style="margin-top:0">' +
+    '<li class="ok">' + ic('check_circle', 'ic-sm') + '<span>不限次数的图像识别</span></li>' +
+    '<li class="ok">' + ic('check_circle', 'ic-sm') + '<span>识别历史自动保存与筛选检索</span></li>' +
+    '<li class="ok">' + ic('check_circle', 'ic-sm') + '<span>多条记录图像对比与 CSV 导出</span></li>' +
+    '</div><div class="mt12 muted">额度在服务端按会话标识计数，清理本地存储无法重置额度。</div>',
+    '<button class="btn" data-act="quotaLater">稍后再说</button>' +
+    '<button class="btn btn-primary" data-act="quotaRegister">立即注册</button>', 'slim');
+}
+
+/* 上传超限确认 */
+function modalOverLimit(n, limit){
+  openModal('超出单批上传上限',
+    '<p style="margin:0 0 12px">本次选择了 <b class="num">' + n + '</b> 个文件，单批最多 <b class="num">' +
+    limit + '</b> 张。按 PRD BR-UPLOAD-03，超出部分整体拒绝并提示分批上传，不做静默截断。</p>' +
+    alertBox('warn', '请分批上传', '已选中前 ' + limit + ' 张进入队列；其余 ' + (n - limit) +
+      ' 张未入队，可再次选择以分批提交。'),
+    '<button class="btn" data-act="closeModal">知道了</button>' +
+    '<button class="btn btn-primary" data-act="acceptFirstN" data-n="' + n + '" data-limit="' + limit + '">' +
+    '仅上传前 ' + limit + ' 张</button>');
+}
+
+/* 批量上传校验失败汇总 */
+function modalUploadErrors(fails){
+  var rows = '';
+  for (var i = 0; i < fails.length; i++){
+    rows += '<tr><td>' + esc(truncMid(fails[i].name, 40)) + '</td><td>' + esc(fails[i].size) +
+      '</td><td style="color:var(--danger)">' + esc(fails[i].err) + '</td></tr>';
+  }
+  openModal('部分文件未通过校验',
+    '<p style="margin:0 0 12px">同一批次中单个文件失败不阻断其余文件，失败项单独提示（BR-UPLOAD-04）。</p>' +
+    '<div class="table-wrap"><table class="tbl"><thead><tr><th>文件名</th><th>体积</th><th>原因</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>',
+    '<button class="btn btn-primary" data-act="closeModal">知道了</button>');
+}
+
+/* 删除记录二次确认（PRD 5.4.5） */
+function modalDeleteRecord(id, bulk){
+  var body;
+  if (bulk){
+    var n = state.historySel.length;
+    body = '<p style="margin:0 0 12px">即将删除 <b class="num">' + n +
+      '</b> 条识别记录。删除采用软删除，记录会立即从列表、筛选与导出结果中排除。</p>' +
+      alertBox('warn', '删除后 30 天内可通过平台恢复，超期不可恢复',
+        '批量删除单次上限 100 条，当前 ' + n + ' 条在限制内（BR-HISTORY-06）。');
+  } else {
+    var r = null;
+    for (var i = 0; i < RECORDS.length; i++) if (RECORDS[i].id === id) r = RECORDS[i];
+    var sp = r ? SPECIES[r.spIdx] : null;
+    body = '<p style="margin:0 0 12px">即将删除以下识别记录：</p>' +
+      '<div class="card card-tight" style="background:var(--surface-2)">' +
+      '<div class="kv"><span class="k">识别物种</span><span class="v">' + esc(sp ? sp.cn : '—') + '</span></div>' +
+      '<div class="kv"><span class="k">原图文件名</span><span class="v">' + esc(r ? r.fn : '—') + '</span></div>' +
+      '<div class="kv"><span class="k">识别时间</span><span class="v num">' + esc(r ? r.t : '—') + '</span></div>' +
+      '<div class="kv"><span class="k">记录编号</span><span class="v" style="font-family:var(--mono);font-size:11.5px">' +
+      esc(r ? r.id : '—') + '</span></div></div>' +
+      alertBox('warn', '删除后 30 天内可通过平台恢复，超期不可恢复',
+        '为保障可追溯性，采用软删除而非物理删除；30 天后由系统物理清理。');
+  }
+  modalConfirm('确认删除识别记录', body, bulk ? '确认删除 ' + state.historySel.length + ' 条' : '确认删除',
+    bulk ? 'confirmBulkDelete' : 'confirmDeleteRecord', bulk ? '' : ' data-id="' + esc(id) + '"');
+}
+
+/* 管理员删除记录确认 */
+function modalDeleteAdminRecord(id){
+  var r = null;
+  for (var i = 0; i < RECORDS.length; i++) if (RECORDS[i].id === id) r = RECORDS[i];
+  var sp = r ? SPECIES[r.spIdx] : null;
+  modalConfirm('确认删除该识别记录',
+    '<p style="margin:0 0 12px">管理员操作不受数据范围限制，可删除任意用户的记录。本次将删除：</p>' +
+    '<div class="card card-tight" style="background:var(--surface-2)">' +
+    '<div class="kv"><span class="k">识别物种</span><span class="v">' + esc(sp ? sp.cn : '—') + '</span></div>' +
+    '<div class="kv"><span class="k">原图文件名</span><span class="v">' + esc(r ? r.fn : '—') + '</span></div>' +
+    '<div class="kv"><span class="k">记录编号</span><span class="v" style="font-family:var(--mono);font-size:11.5px">' +
+    esc(r ? r.id : '—') + '</span></div></div>' +
+    alertBox('info', '操作将记入审计日志', '管理员删除记录同样采用软删除（BR-HISTORY-03），' +
+      '并记录操作人、时间与被删除记录编号（BR-USER-17）。'),
+    '确认删除', 'confirmDeleteAdminRecord', ' data-id="' + esc(id) + '"');
+}
+
+/* 禁用 / 启用用户确认 */
+function modalToggleUser(id){
+  var u = null;
+  for (var i = 0; i < USERS.length; i++) if (USERS[i].id === id) u = USERS[i];
+  if (!u) return;
+  if (u.name === state.me.name){
+    openModal('无法执行该操作',
+      alertBox('err', '不能对当前登录账号执行该操作',
+        '管理员不可禁用或删除自身账号，避免管理权限丢失（BR-USER-11，对应 AC-FR-USER-07-2）。'),
+      '<button class="btn btn-primary" data-act="closeModal">知道了</button>', 'slim');
+    return;
+  }
+  var disabling = u.status === 'on';
+  modalConfirm(disabling ? '确认禁用该账号' : '确认启用该账号',
+    '<p style="margin:0 0 12px">账号 <b>' + esc(u.name) + '</b>（' + esc(u.nick) + '）当前状态：' +
+    (disabling ? '启用中' : '已禁用') + '</p>' +
+    (disabling
+      ? alertBox('warn', '该用户既有会话将立即失效', '禁用后该用户立即无法登录，已签发的访问令牌与刷新令牌同步失效（BR-USER-09）。')
+      : alertBox('info', '启用后该账号可正常登录', '用户需重新登录以获取新的访问令牌。')) +
+    '<div class="mt12 muted">本次操作将记入审计日志。</div>',
+    disabling ? '确认禁用' : '确认启用', 'confirmToggleUser', ' data-id="' + id + '"');
+}
+
+/* 重置密码确认 */
+function modalResetPwd(id){
+  var u = null;
+  for (var i = 0; i < USERS.length; i++) if (USERS[i].id === id) u = USERS[i];
+  if (!u) return;
+  if (u.name === state.me.name){
+    openModal('无法执行该操作',
+      alertBox('err', '不能对当前登录账号执行该操作', '请通过个人中心的「修改密码」入口修改本人密码。'),
+      '<button class="btn btn-primary" data-act="closeModal">知道了</button>', 'slim');
+    return;
+  }
+  modalConfirm('确认重置该用户密码',
+    '<p style="margin:0 0 12px">将为账号 <b>' + esc(u.name) + '</b>（' + esc(u.nick) + '）生成一次性临时密码。</p>' +
+    alertBox('warn', '该用户既有会话将立即失效',
+      '重置后该用户全部既有令牌立即失效，须使用临时密码登录，并在首次登录后修改密码（BR-USER-16）。') +
+    '<div class="mt12"><div class="card card-tight" style="background:var(--surface-2)">' +
+    '<div class="kv"><span class="k">临时密码</span><span class="v" style="font-family:var(--mono)">' +
+    'Seatmp@' + (1000 + u.id * 137) + '</span></div>' +
+    '<div class="kv"><span class="k">有效期</span><span class="v">首次登录后须立即修改</span></div></div></div>',
+    '确认重置', 'confirmResetPwd', ' data-id="' + id + '"');
+}
+
+/* 退出登录确认（存在未提交内容时；PRD 5.4.5） */
+function modalLogout(){
+  var hasPending = state.queue.length > 0;
+  if (!hasPending){
+    openModal('确认退出登录',
+      alertBox('info', '将清除本地令牌', '登出操作使当前令牌立即失效，前端同时清除本地令牌（BR-USER-08）。'),
+      '<button class="btn" data-act="closeModal">取消</button>' +
+      '<button class="btn btn-danger" data-act="confirmLogout">确认退出</button>', 'slim');
+    return;
+  }
+  modalConfirm('确认退出登录',
+    alertBox('warn', '当前上传队列中有 ' + state.queue.length + ' 张图像尚未提交',
+      '退出登录会丢失待识别队列中的内容。若希望保留，请先完成识别或取消本次退出。'),
+    '仍要退出', 'confirmLogout');
+}
+
+/* 系统配置保存确认（PRD 5.4.5：逐项列出变更前后取值） */
+function modalSaveConfig(){
+  var c = state.cfg, changes = [];
+  var inputs = [
+    ['cf-th', '置信度阈值', CONFIG.lowConfThreshold.toFixed(2), function(v){ return parseFloat(v).toFixed(2); }],
+    ['cf-bl', '单批上传上限', String(CONFIG.batchLimit), function(v){ return String(parseInt(v, 10)); }],
+    ['cf-rd', '图像留存天数', String(CONFIG.retentionDays), function(v){ return String(parseInt(v, 10)); }]
+  ];
+  var i, rows = '';
+  for (i = 0; i < inputs.length; i++){
+    var el = document.getElementById(inputs[i][0]);
+    if (!el) continue;
+    var nv = inputs[i][3](el.value);
+    if (nv !== inputs[i][2]){
+      rows += '<tr><td>' + esc(inputs[i][1]) + '</td><td class="tnum">' + esc(inputs[i][2]) +
+        '</td><td class="tnum" style="font-weight:600;color:var(--primary-600)">' + esc(nv) + '</td></tr>';
+    }
+  }
+  if (c.colorCorrect !== CONFIG.colorCorrect){
+    rows += '<tr><td>水下色偏校正</td><td>' + (CONFIG.colorCorrect ? '已开启' : '已关闭') +
+      '</td><td style="font-weight:600;color:var(--primary-600)">' + (c.colorCorrect ? '已开启' : '已关闭') + '</td></tr>';
+  }
+  var body;
+  if (!rows){
+    body = alertBox('info', '没有检测到变更项', '当前表单取值与已保存配置一致，无需保存。' +
+      '如需恢复出厂设置，可使用「恢复默认值」。');
+    openModal('保存系统配置', body,
+      '<button class="btn btn-primary" data-act="closeModal">知道了</button>', 'slim');
+    return;
+  }
+  body = '<p style="margin:0 0 12px">以下配置项将发生变更，保存后立即生效：</p>' +
+    '<div class="table-wrap"><table class="tbl"><thead><tr><th>配置项</th><th>变更前</th><th>变更后</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>' +
+    alertBox('warn', '调整置信度阈值会改变识别结果的判定',
+      '首位候选概率低于阈值时将被标记为低置信度并触发前端可靠性提示（BR-RECOG-04、AC-FR-USER-09-1）。' +
+      '调整图像留存天数不影响已归档的识别结果与元数据。');
+  openModal('保存系统配置', body,
+    '<button class="btn" data-act="closeModal">取消</button>' +
+    '<button class="btn btn-primary" data-act="confirmSaveConfig">确认保存</button>');
+}
+
+/* 原型说明（全量覆盖分布表） */
+function modalPrototypeInfo(){
+  var cov = [
+    ['图像上传', 'FR-UPLOAD-01 ~ 08', '识别工作台 · 上传区 + 预览网格 + 队列操作'],
+    ['图像预处理', 'FR-PREPROC-01 ~ 05', '结果区「查看预处理后图像」+ 系统配置只读参数'],
+    ['智能识别', 'FR-RECOG-01 ~ 06', '识别工作台 · 识别中状态 + 结果区 Top-5'],
+    ['结果展示', 'FR-RESULT-01 ~ 06', '识别结果区（识别工作台内嵌 + 历史详情复用）'],
+    ['历史记录', 'FR-HISTORY-01 ~ 06', '历史记录 · 列表 + 筛选 + 批量条 + 对比视图 + 详情'],
+    ['用户管理', 'FR-USER-01 ~ 09', '登录 · 注册 · 个人中心 · 管理员三页'],
+    ['非功能需求', 'NFR-PERF / SEC / REL / COMPAT / MAINT', '关于与免责 · 隐私表 + 兼容矩阵 · 系统配置运行时信息'],
+    ['页面清单', 'PRD 5.2 全部 13 个路由', '首页 / 识别 / 关于 / 登录 / 注册 / 历史 / 详情 / 对比 / 个人中心 / 管理员三页 / 404'],
+    ['业务规则', 'BR-* 共 60 条', '分散承载于各视图的规则说明与交互约束中'],
+    ['验收条件', 'AC-* 共 54 条', '示例数据口径对齐验收用例（置信度 92.4% / 31.2%、阈值 0.40、9 张上限等）']
+  ];
+  var rows = '';
+  for (var i = 0; i < cov.length; i++){
+    rows += '<tr><td style="font-weight:500">' + esc(cov[i][0]) + '</td><td style="font-family:var(--mono);font-size:11.5px">' +
+      esc(cov[i][1]) + '</td><td class="muted-2">' + esc(cov[i][2]) + '</td></tr>';
+  }
+  openModal('原型说明 · 覆盖范围与设计系统',
+    '<div class="card card-tight" style="background:var(--surface-2);margin-bottom:14px">' +
+    '<div style="font-size:13px;line-height:1.75">' +
+    '<b>原型的性质</b>：静态示例数据，不连后端；所有交互为前端模拟。用于交互流程与视觉规范的评审，' +
+    '不用于替代真实功能验证。数据口径取自 PRD 的量化目标、验收用例与附录 A 物种清单，未凭空编造。<br>' +
+    '<b>明确不做的范围</b>：不做实时视频流识别、不做模型关注区域可视化（BR-RESULT-06）、' +
+    '不做移动端原生 App（PRD 1.5 产品边界）。</div></div>' +
+    '<b style="font-size:13.5px">全量覆盖分布</b>' +
+    '<div class="table-wrap mt12"><table class="tbl"><thead><tr>' +
+    '<th style="width:120px">模块 / 类别</th><th style="width:210px">PRD 编号范围</th><th>原型落点</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<div class="mt16"><b style="font-size:13.5px">设计系统（按 ui-ux-pro-max 规则手工确立）</b>' +
+    '<div class="mt12" style="font-size:13px;line-height:1.8">' +
+    '<b>风格</b>：扁平海洋主题 —— 主色 <code style="font-family:var(--mono)">#0E7C86</code>（深青，取自海水与鱼体青绿），' +
+    '中性灰蓝用于非首位候选与次要信息，警示色 <code style="font-family:var(--mono)">#B45309</code> 用于低置信度提示。<br>' +
+    '<b>对比度</b>：正文 <code style="font-family:var(--mono)">#0F172A</code> 于白底约 17:1，次要文字 ' +
+    '<code style="font-family:var(--mono)">#475569</code> 约 7.5:1，均高于 4.5:1 下限。<br>' +
+    '<b>图标</b>：全部为内联 SVG（viewBox 24×24，stroke-width 1.9），无 emoji 图标。<br>' +
+    '<b>交互</b>：主要控件最小高度 44px；悬停只改变颜色 / 边框 / 背景，不使用缩放位移；过渡 150 ～ 300 ms；' +
+    '聚焦态有可见焦点环。<br>' +
+    '<b>数字</b>：表格、置信度、耗时统一 <code style="font-family:var(--mono)">tabular-nums</code>。<br>' +
+    '<b>响应式</b>：按 PRD 5.5.1 三档断点 —— &lt; 768px 单列（预览 2 列、结果区上下堆叠、历史转卡片），' +
+    '768 ～ 1023px 单列为主，≥ 1024px 完整布局（结果区左右分栏）。<br>' +
+    '<b>动效</b>：遵循 <code style="font-family:var(--mono)">prefers-reduced-motion</code> 关闭动画。</div></div>' +
+    '<div class="mt16 alert alert-info">' + ic('info') + '<div><b>设计系统来源声明</b>' +
+    '<div class="mt8">ui-ux-pro-max 技能包（本机安装版）仅含 SKILL.md 与元数据文件，' +
+    '<b>未附带检索脚本与设计数据库</b>，因此 <code>' + '--design-system' + '</code> 命令不可用。' +
+    '本原型的设计令牌与风格选择系按该 SKILL.md 中的 8 类优先级规则、专业 UI 通用规则与交付前检查清单手工确立。</div></div></div>',
+    '<button class="btn btn-primary" data-act="closeModal">关闭</button>', 'wide');
+}
+</script>
+<script>
+/* ---------- ⑥ 视图映射与路由 ---------- */
+var VIEWS = {
+  home: viewHome,
+  recognize: viewRecognize,
+  about: viewAbout,
+  login: viewLogin,
+  register: viewRegister,
+  history: viewHistory,
+  historyDetail: viewHistoryDetail,
+  compare: viewCompare,
+  profile: viewProfile,
+  adminUsers: viewAdminUsers,
+  adminRecords: viewAdminRecords,
+  adminConfig: viewAdminConfig,
+  notFound: view404
+};
+var ROUTE_HASH = {
+  home:'#/', recognize:'#/recognize', about:'#/about', login:'#/login', register:'#/register',
+  history:'#/history', historyDetail:'#/history/:id', compare:'#/history/compare',
+  profile:'#/profile', adminUsers:'#/admin/users', adminRecords:'#/admin/records',
+  adminConfig:'#/admin/config', notFound:'#/404'
+};
+var AUTH_ROUTES = ['history','historyDetail','compare','profile'];
+var ADMIN_ROUTES = ['adminUsers','adminRecords','adminConfig'];
+
+function topNavItems(){
+  var items = [
+    {r:'home', t:'首页', ic:'home'},
+    {r:'recognize', t:'识别工作台', ic:'scan'},
+    {r:'about', t:'关于与免责', ic:'shield'}
+  ];
+  if (state.authed){
+    items.push({r:'history', t:'历史记录', ic:'history'});
+    items.push({r:'profile', t:'个人中心', ic:'user'});
+  }
+  return items;
+}
+function renderTopnav(){
+  var nav = document.getElementById('topnav');
+  if (nav){
+    var items = topNavItems(), out = '';
+    for (var i = 0; i < items.length; i++){
+      var on = (state.route === items[i].r) ||
+        (items[i].r === 'history' && (state.route === 'compare' || state.route === 'historyDetail'));
+      out += '<a href="' + ROUTE_HASH[items[i].r] + '" data-act="go" data-route="' + items[i].r + '"' +
+        (on ? ' class="on"' : '') + ' aria-current="' + (on ? 'page' : 'false') + '">' +
+        ic(items[i].ic, 'ic-sm') + ' ' + esc(items[i].t) + '</a>';
+    }
+    nav.innerHTML = out;
+    hydrateIcons(nav);
+  }
+  var tr = document.getElementById('topright');
+  if (tr){
+    var o = '';
+    if (state.authed){
+      var isAdmin = state.role === 'admin';
+      o += '<span class="tag tag-primary">' + ic(isAdmin ? 'shield' : 'user', 'ic-sm') + ' ' +
+        esc(state.me.nick || state.me.name) + '</span>';
+      if (isAdmin) o += '<button class="btn btn-sm" data-act="go" data-route="adminUsers">' +
+        ic('gear', 'ic-sm') + ' 管理后台</button>';
+      o += '<button class="btn btn-sm" data-act="doLogout">' + ic('logout', 'ic-sm') + ' 退出</button>';
+    } else {
+      o += '<span class="tag tag-info">' + ic('info', 'ic-sm') + ' 游客剩余 ' + state.guestLeft + ' / ' +
+        CONFIG.guestQuota + ' 次</span>';
+      o += '<button class="btn btn-sm" data-act="go" data-route="login">' + ic('key', 'ic-sm') + ' 登录</button>';
+      o += '<button class="btn btn-sm btn-primary" data-act="go" data-route="register">' + ic('user', 'ic-sm') + ' 注册</button>';
+    }
+    o += '<button class="btn btn-sm btn-ghost" data-act="showProtoInfo" title="原型说明与覆盖范围">' +
+      ic('info', 'ic-sm') + '</button>';
+    tr.innerHTML = o;
+    hydrateIcons(tr);
+  }
+}
+function render(opts){
+  var o = opts || {};
+  var app = document.getElementById('app');
+  if (!app) return;
+  var fn = VIEWS[state.route] || VIEWS.notFound;
+  var html;
+  try {
+    html = fn();
+  } catch (e){
+    html = '<div class="card">' + alertBox('err', '原型渲染出现异常', esc(String(e && e.message ? e.message : e))) + '</div>';
+  }
+  app.innerHTML = html;
+  hydrateIcons(app);
+  renderTopnav();
+  if (!o.keepScroll && window.scrollTo) window.scrollTo({top:0, behavior:'auto'});
+  if (!o.keepScroll){
+    var t = document.getElementById('app');
+    if (t && t.scrollIntoView) { /* 保持顶部 */ }
+  }
+}
+/* 对比视图需要 2 ～ 4 条记录。直接进入该路由（未经过历史页勾选）时，
+   从历史记录中预置 3 条作为示例选择，避免落入空态 —— 空态另有「少于 2 条」的
+   明确限制提示路径（由 viewCompare 自行处理）。 */
+function seedCompareSel(){
+  if (!state.compareSel || state.compareSel.length < 2){
+    if (RECORDS.length >= 2) state.compareSel = [RECORDS[0], RECORDS[1], RECORDS[4]];
+  }
+}
+function goto(route, opts){
+  if (!route || !VIEWS[route]) route = 'notFound';
+  if (AUTH_ROUTES.indexOf(route) >= 0 && !state.authed){
+    toast('该页面需要登录后访问，已保留原访问路径', 'warn');
+    state.route = 'login';
+  } else if (ADMIN_ROUTES.indexOf(route) >= 0 && state.role !== 'admin'){
+    toast('该页面仅管理员可见', 'err');
+    state.route = 'notFound';
+  } else {
+    state.route = route;
+    if (route === 'compare') seedCompareSel();
+  }
+  var h = ROUTE_HASH[state.route] || '#/';
+  if (window.location && window.location.hash !== h){
+    window.location.hash = h;
+  }
+  render();
+}
+function routeFromHash(){
+  var h = (window.location && window.location.hash) || '';
+  h = h.replace(/^#/, '');
+  if (h === '' || h === '/') return 'home';
+  if (h === '/recognize') return 'recognize';
+  if (h === '/about') return 'about';
+  if (h === '/login') return 'login';
+  if (h === '/register') return 'register';
+  if (h === '/history') return 'history';
+  if (h === '/history/compare'){
+    seedCompareSel();
+    return 'compare';
+  }
+  if (h.indexOf('/history/') === 0) return 'historyDetail';
+  if (h === '/profile') return 'profile';
+  if (h === '/admin/users') return 'adminUsers';
+  if (h === '/admin/records') return 'adminRecords';
+  if (h === '/admin/config') return 'adminConfig';
+  return 'notFound';
+}
+
+/* ---------- 业务动作 ---------- */
+function loginAs(name){
+  state.authed = true;
+  state.me = {
+    name:name,
+    nick:(name === 'admin' ? '系统管理员' : '何永麒'),
+    email:(name === 'admin' ? 'admin@seatong.local' : 'hyq2023@example.com'),
+    reg:(name === 'admin' ? '2026-09-17 09:12:04' : '2026-09-17 14:33:51'),
+    cnt:(name === 'admin' ? 0 : 8),
+    role:(name === 'admin' ? 'admin' : 'user')
+  };
+  state.role = state.me.role;
+  state.profileForm = {nick:state.me.nick, email:state.me.email};
+}
+function tryLogin(){
+  var n = (state.loginForm.name || '').trim();
+  var p = state.loginForm.pwd || '';
+  if (!n || !p){
+    state.loginErr = '请填写用户名与密码';
+    state.loginLock = '';
+    render();
+    return;
+  }
+  var ok = ((n.toLowerCase() === 'admin' && p === 'Admin@2026') ||
+            (n.toLowerCase() === 'hyq2023' && p === 'Seatong@2026'));
+  if (ok){
+    state.loginErr = ''; state.loginLock = '';
+    loginAs(n.toLowerCase() === 'admin' ? 'admin' : 'hyq2023');
+    state.loginForm = {name:'', pwd:''};
+    toast('登录成功，令牌已签发（访问令牌 2 小时）', 'ok');
+    goto('recognize');
+    return;
+  }
+  state.loginErr = '用户名或密码不正确';
+  state.loginLock = '';
+  render();
+}
+function doRegister(){
+  var f = state.regForm, r = pwdRules(f.pwd);
+  state.regTouched = {name:true, pwd:true, pwd2:true, email:true};
+  var bad = !nameValid(f.name) || !r.len || !r.mix || !r.notName || f.pwd !== f.pwd2;
+  if (bad){
+    render();
+    toast('请按提示修正表单中的问题', 'err');
+    return;
+  }
+  if (f.name.toLowerCase() === 'admin' || f.name.toLowerCase() === 'hyq2023'){
+    render();
+    toast('该用户名已被占用，请更换一个', 'err');
+    return;
+  }
+  loginAs(f.name);
+  state.regForm = {name:'', pwd:'', pwd2:'', email:''};
+  state.regTouched = {name:false, pwd:false, pwd2:false, email:false};
+  toast('注册成功并已自动登录', 'ok');
+  goto('recognize');
+}
+function doLogoutNow(){
+  state.authed = false;
+  state.role = 'guest';
+  state.me = {name:'', nick:'', email:'', reg:'', cnt:0, role:'user'};
+  state.historySel = [];
+  state.queue = [];
+  closeModal();
+  toast('已退出登录，令牌已失效', 'ok');
+  goto('home');
+}
+function addFilesToQueue(n, forced){
+  var limit = CONFIG.batchLimit;
+  if (!forced && n > limit){
+    modalOverLimit(n, limit);
+    return;
+  }
+  var add = Math.min(n, limit);
+  var errs = [];
+  var samples = [
+    {name:'holiday_photo.gif', size:'2.4 MB', err:'格式不合法，仅支持 jpg / jpeg / png / bmp'},
+    {name:'scan_large.jpg',    size:'11.4 MB', err:'文件体积 11.4 MB 超出 10 MB 上限'},
+    {name:'dive_notes.txt',    size:'0.3 MB', err:'按文件头特征判定为文本文件，文件类型不合法'}
+  ];
+  /* 超限确认后按「仅上传前 N 张」重入：用户已就分批上传作出明确选择，
+     本次仅把前 N 张入队，不再二次弹出校验失败汇总弹窗（避免覆盖掉用户刚确认的上下文）。 */
+  var quiet = !!forced;
+  for (var i = 0; i < add; i++){
+    if (state.queue.length >= limit) break;
+    if (state.queue.length + 1 > limit) break;
+    var injectErr = (!quiet && errs.length < 1 && i === add - 1 && add >= 3 && (state.uploadErr === ''));
+    if (injectErr){
+      var s = samples[state.queue.length % samples.length];
+      state.queue.push({name:s.name, size:s.size, ok:false, err:s.err});
+      errs.push({name:s.name, size:s.size, err:s.err});
+    } else {
+      var nm = 'IMG_' + (2300 + state.queue.length) + '.png';
+      state.queue.push({name:nm, size:(1.4 + (state.queue.length % 5) * 0.7).toFixed(1) + ' MB', ok:true, err:''});
+    }
+  }
+  var okN = 0;
+  for (var k = 0; k < state.queue.length; k++) if (state.queue[k].ok) okN++;
+  state.uploadErr = errs.length
+    ? (state.queue.filter(function(x){ return !x.ok; }).length + ' 个文件未通过校验，其余文件已进入待上传队列')
+    : '';
+  render();
+  if (errs.length) modalUploadErrors(state.queue.filter(function(x){ return !x.ok; }));
+  else toast('已加入 ' + add + ' 张图像到待识别队列（已跳过超出单批上限的 ' +
+    (n > limit ? (n - limit) : 0) + ' 张，可分批提交）', 'ok');
+}
+function startRecognize(){
+  if (state.queue.length === 0) return;
+  var okN = 0;
+  for (var i = 0; i < state.queue.length; i++) if (state.queue[i].ok) okN++;
+  if (okN === 0){
+    toast('队列中没有通过校验的文件，请重新选择', 'err');
+    return;
+  }
+  if (!state.authed && state.guestLeft <= 0){
+    modalQuota();
+    return;
+  }
+  state.batchRunning = true;
+  state.batchCur = 0;
+  state.stage = 1;
+  render();
+  var tick = 0;
+  var timer = setInterval(function(){
+    tick++;
+    state.batchCur = Math.min(okN, tick);
+    state.stage = tick === 1 ? 1 : (tick === 2 ? 2 : 3);
+    if (tick === 1) render();
+    if (state.batchCur >= okN){
+      clearInterval(timer);
+      state.batchRunning = false;
+      state.stage = 3;
+      state.resultSpIdx = 0;
+      state.resultConf = 0.924;
+      state.resultMs = 1180;
+      if (!state.authed){
+        state.guestLeft = Math.max(0, state.guestLeft - 1);
+        toast('识别完成。游客结果不写入历史记录，注册后可保存', 'warn');
+      } else {
+        toast('识别完成，结果已保存到历史记录', 'ok');
+      }
+      render();
+      if (!state.authed && state.guestLeft <= 0){
+        state.guestLeftAfter = 0;
+        modalQuota();
+        state.guestLeftAfter = null;
+      }
+    } else {
+      render();
+    }
+  }, 700);
+}
+</script>
+<script>
+/* ---------- 事件委托（单一入口） ---------- */
+function numVal(id, dflt){
+  var el = document.getElementById(id);
+  if (!el) return dflt;
+  var v = parseFloat(el.value);
+  return isNaN(v) ? dflt : v;
+}
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+document.addEventListener('click', function(ev){
+  var mask = ev.target;
+  if (mask && mask.id === 'modalMask'){ closeModal(); return; }
+
+  var el = ev.target.closest ? ev.target.closest('[data-act]') : null;
+  if (!el) return;
+
+  if (el.tagName === 'INPUT' && el.type === 'checkbox'){
+    var cAct = el.getAttribute('data-act');
+    if (cAct === 'selHistory'){
+      var cid = el.getAttribute('data-id');
+      var pos = state.historySel.indexOf(cid);
+      if (el.checked && pos < 0) state.historySel.push(cid);
+      if (!el.checked && pos >= 0) state.historySel.splice(pos, 1);
+      render({keepScroll:true});
+    } else if (cAct === 'selAllHistory'){
+      var all = filteredRecords();
+      state.historySel = el.checked ? all.map(function(x){ return x.id; }) : [];
+      render({keepScroll:true});
+    }
+    return;
+  }
+
+  var act = el.getAttribute('data-act');
+  switch (act){
+    /* 导航 */
+    case 'go':
+      if (ev.preventDefault) ev.preventDefault();
+      goto(el.getAttribute('data-route'));
+      break;
+    case 'goHistory': goto('history'); break;
+    case 'goRecognize': goto('recognize'); break;
+
+    /* 弹窗基础 */
+    case 'closeModal': closeModal(); break;
+    case 'showProtoInfo': modalPrototypeInfo(); break;
+
+    /* 上传链路 */
+    case 'pickFiles': addFilesToQueue(3, false); break;
+    case 'removeFile':
+      var ri = parseInt(el.getAttribute('data-idx'), 10);
+      state.queue.splice(ri, 1);
+      if (state.queue.length === 0) state.uploadErr = '';
+      render({keepScroll:true});
+      toast('已移除该图像', '');
+      break;
+    case 'clearQueue':
+      state.queue = [];
+      state.uploadErr = '';
+      render({keepScroll:true});
+      toast('队列已清空，主操作按钮已置为禁用态', '');
+      break;
+    case 'acceptFirstN':
+      closeModal();
+      addFilesToQueue(parseInt(el.getAttribute('data-limit'), 10), true);
+      break;
+    case 'startRecognize': startRecognize(); break;
+
+    /* 结果区 */
+    case 'togglePreproc':
+      state.showPreproc = !state.showPreproc;
+      render({keepScroll:true});
+      break;
+    case 'toggleFold':
+      var fk = el.getAttribute('data-key');
+      state.folded[fk] = !state.folded[fk];
+      render({keepScroll:true});
+      break;
+    case 'reRecognize':
+      toast('已重置识别状态，可重新提交队列', '');
+      goto('recognize');
+      break;
+
+    /* 认证 */
+    case 'doLogin': tryLogin(); break;
+    case 'doRegister': doRegister(); break;
+    case 'doLogout':
+      if (state.queue.length > 0) modalLogout();
+      else modalLogout();
+      break;
+    case 'confirmLogout': doLogoutNow(); break;
+
+    /* 额度引导 */
+    case 'quotaRegister': closeModal(); goto('register'); break;
+    case 'quotaLater': closeModal(); toast('稍后可在顶部导航进入注册', ''); break;
+
+    /* 历史记录 */
+    case 'openRecord':
+      nySet('detailId', el.getAttribute('data-id'));
+      goto('historyDetail');
+      break;
+    case 'resetHistoryFilter':
+      state.historyFilters = {range:'all', from:'', to:'', sp:'all', kw:'', order:'desc'};
+      state.historySel = [];
+      render({keepScroll:true});
+      toast('筛选条件已重置，全部记录已恢复', 'ok');
+      break;
+    case 'clearHistorySel':
+      state.historySel = [];
+      render({keepScroll:true});
+      break;
+    case 'goCompare':
+      var sel = [];
+      for (var i = 0; i < RECORDS.length; i++){
+        if (state.historySel.indexOf(RECORDS[i].id) >= 0) sel.push(RECORDS[i]);
+      }
+      if (sel.length < 2 || sel.length > 4){
+        toast('对比视图需要勾选 2 ～ 4 条记录，当前已选 ' + sel.length + ' 条', 'err');
+        break;
+      }
+      state.compareSel = sel;
+      goto('compare');
+      break;
+    case 'exportSelected':
+      if (state.historySel.length === 0){ toast('请先勾选需要导出的记录', 'err'); break; }
+      if (state.historySel.length > 5000){
+        toast('单次导出上限 5000 条，当前 ' + state.historySel.length + ' 条，请缩小筛选范围', 'err');
+        break;
+      }
+      toast('已导出 seatong_history_' + nowStr().replace(/[-: ]/g, '').slice(0, 14) + '.csv（UTF-8 with BOM，固定 8 列）', 'ok');
+      break;
+    case 'doExport':
+      var allRec = filteredRecords();
+      if (allRec.length > 5000){
+        toast('当前匹配 ' + allRec.length + ' 条，超过单次导出上限 5000 条，请缩小筛选范围', 'err');
+        break;
+      }
+      toast('已按当前筛选条件导出 ' + allRec.length + ' 条记录，文件名 seatong_history_' +
+        nowStr().replace(/[-: ]/g, '').slice(0, 14) + '.csv', 'ok');
+      break;
+    case 'openDeleteRecord': modalDeleteRecord(el.getAttribute('data-id'), false); break;
+    case 'confirmDeleteRecord':
+      closeModal();
+      toast('记录已删除。30 天内可通过平台恢复，超期不可恢复', 'ok');
+      break;
+    case 'bulkDeleteHistory':
+      if (state.historySel.length > 100){
+        toast('批量删除单次上限 100 条，当前已选 ' + state.historySel.length + ' 条，请分批操作', 'err');
+        break;
+      }
+      modalDeleteRecord('', true);
+      break;
+    case 'confirmBulkDelete':
+      closeModal();
+      toast('已删除 ' + state.historySel.length + ' 条记录', 'ok');
+      state.historySel = [];
+      render({keepScroll:true});
+      break;
+
+    /* 个人中心 */
+    case 'saveProfile':
+      var nick = (document.getElementById('pf-nick') || {}).value || '';
+      var mail = (document.getElementById('pf-mail') || {}).value || '';
+      state.profileErr = {};
+      if (nick.length < 2 || nick.length > 20) state.profileErr.nick = '昵称长度需为 2 ～ 20 字符，当前 ' + nick.length + ' 字符';
+      if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) state.profileErr.email = '邮箱格式不正确，请检查后重新输入';
+      if (state.profileErr.nick || state.profileErr.email){
+        render({keepScroll:true});
+        toast('请按提示修正表单中的问题', 'err');
+        break;
+      }
+      state.profileForm = {nick:nick, email:mail};
+      state.me.nick = nick; state.me.email = mail;
+      render({keepScroll:true});
+      toast('个人信息已保存，刷新页面后仍然保留', 'ok');
+      break;
+    case 'doChangePwd':
+      var oldP = (document.getElementById('pw-old') || {}).value || '';
+      var nwP = (document.getElementById('pw-nw') || {}).value || '';
+      var nw2P = (document.getElementById('pw-nw2') || {}).value || '';
+      state.pwdErr = {};
+      if (!oldP) state.pwdErr.old = '请输入当前密码';
+      if (nwP.length < 8 || nwP.length > 32) state.pwdErr.nw = '新密码长度需为 8 ～ 32 位';
+      else if (!(/[A-Za-z]/.test(nwP) && /\d/.test(nwP))) state.pwdErr.nw = '新密码需同时包含字母与数字';
+      else if (nwP.toLowerCase() === state.me.name.toLowerCase()) state.pwdErr.nw = '新密码不允许与用户名相同';
+      if (nw2P !== nwP) state.pwdErr.nw2 = '两次输入的新密码不一致';
+      if (state.pwdErr.old || state.pwdErr.nw || state.pwdErr.nw2){
+        render({keepScroll:true});
+        toast('请按提示修正表单中的问题', 'err');
+        break;
+      }
+      state.pwdForm = {old:'', nw:'', nw2:''};
+      state.pwdErr = {};
+      toast('密码已更新，请重新登录', 'ok');
+      state.authed = false; state.role = 'guest';
+      goto('login');
+      break;
+
+    /* 管理员 · 用户管理 */
+    case 'toggleUser': modalToggleUser(parseInt(el.getAttribute('data-id'), 10)); break;
+    case 'confirmToggleUser':
+      closeModal();
+      toast('账号状态已更新，该用户既有令牌已立即失效', 'ok');
+      break;
+    case 'openResetPwd': modalResetPwd(parseInt(el.getAttribute('data-id'), 10)); break;
+    case 'confirmResetPwd':
+      closeModal();
+      toast('已重置密码并生成一次性临时密码', 'ok');
+      break;
+    case 'clearAdminUserKw':
+      state.adminUserKw = '';
+      render({keepScroll:true});
+      break;
+    case 'clearAdminRecKw':
+      state.adminRecKw = '';
+      render({keepScroll:true});
+      break;
+
+    /* 管理员 · 记录管理 */
+    case 'openDeleteAdminRecord': modalDeleteAdminRecord(el.getAttribute('data-id')); break;
+    case 'confirmDeleteAdminRecord':
+      closeModal();
+      toast('记录已软删除，操作已记入审计日志', 'ok');
+      break;
+
+    /* 管理员 · 系统配置 */
+    case 'toggleColorCorrect':
+      state.cfg.colorCorrect = !state.cfg.colorCorrect;
+      render({keepScroll:true});
+      break;
+    case 'openSaveConfig': modalSaveConfig(); break;
+    case 'confirmSaveConfig':
+      var t = clamp(numVal('cf-th', CONFIG.lowConfThreshold), 0.10, 0.90);
+      var b = Math.round(clamp(numVal('cf-bl', CONFIG.batchLimit), 1, 20));
+      var d = Math.round(clamp(numVal('cf-rd', CONFIG.retentionDays), 30, 365));
+      CONFIG.lowConfThreshold = t;
+      CONFIG.batchLimit = b;
+      CONFIG.retentionDays = d;
+      state.cfg = {lowConfThreshold:t, batchLimit:b, colorCorrect:state.cfg.colorCorrect, retentionDays:d, guestQuota:CONFIG.guestQuota};
+      closeModal();
+      render({keepScroll:true});
+      toast('系统配置已保存并立即生效', 'ok');
+      break;
+    case 'resetConfig':
+      state.cfg = {lowConfThreshold:0.40, batchLimit:9, colorCorrect:true, retentionDays:180, guestQuota:3};
+      render({keepScroll:true});
+      toast('表单已恢复默认值（尚未保存，需点击「保存配置」生效）', '');
+      break;
+
+    /* 兜底 */
+    default:
+      break;
+  }
+}, false);
+
+/* input：只写 state，绝不 render（避免输入框失焦、光标跳回开头） */
+document.addEventListener('input', function(ev){
+  var el = ev.target;
+  if (!el || !el.id) return;
+  switch (el.id){
+    case 'lg-name': state.loginForm.name = el.value; break;
+    case 'lg-pwd': state.loginForm.pwd = el.value; break;
+    case 'rg-name': state.regForm.name = el.value; break;
+    case 'rg-pwd': state.regForm.pwd = el.value; break;
+    case 'rg-pwd2': state.regForm.pwd2 = el.value; break;
+    case 'rg-mail': state.regForm.email = el.value; break;
+    case 'hf-kw': state.historyFilters.kw = el.value; break;
+    case 'au-kw': state.adminUserKw = el.value; break;
+    case 'ar-kw': state.adminRecKw = el.value; break;
+    default: break;
+  }
+}, false);
+
+/* change：写 state 后重绘并重算派生数值（此时已失焦，重绘安全） */
+document.addEventListener('change', function(ev){
+  var el = ev.target;
+  if (!el || !el.id) return;
+  switch (el.id){
+    case 'hf-range':
+      state.historyFilters.range = el.value;
+      state.historySel = [];
+      render({keepScroll:true});
+      break;
+    case 'hf-sp':
+      state.historyFilters.sp = el.value;
+      state.historySel = [];
+      render({keepScroll:true});
+      break;
+    case 'hf-order':
+      state.historyFilters.order = el.value;
+      render({keepScroll:true});
+      break;
+    case 'hf-from':
+      state.historyFilters.from = el.value;
+      render({keepScroll:true});
+      break;
+    case 'hf-to':
+      state.historyFilters.to = el.value;
+      render({keepScroll:true});
+      break;
+    case 'rg-name':
+      state.regTouched.name = true;
+      render({keepScroll:true});
+      break;
+    case 'rg-pwd':
+      state.regTouched.pwd = true;
+      render({keepScroll:true});
+      break;
+    case 'rg-pwd2':
+      state.regTouched.pwd2 = true;
+      render({keepScroll:true});
+      break;
+    case 'au-kw':
+      state.adminUserKw = el.value;
+      render({keepScroll:true});
+      break;
+    case 'ar-kw':
+      state.adminRecKw = el.value;
+      render({keepScroll:true});
+      break;
+    default: break;
+  }
+}, false);
+
+/* 键盘可达性：品牌区与开关支持 Enter / Space */
+document.addEventListener('keydown', function(ev){
+  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+  var el = ev.target;
+  if (!el || !el.getAttribute) return;
+  var act = el.getAttribute('data-act');
+  if (!act) return;
+  if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'INPUT') return;
+  if (act === 'go'){
+    if (ev.preventDefault) ev.preventDefault();
+    goto(el.getAttribute('data-route'));
+  } else if (act === 'pickFiles'){
+    if (ev.preventDefault) ev.preventDefault();
+    addFilesToQueue(3, false);
+  } else if (act === 'toggleColorCorrect'){
+    if (ev.preventDefault) ev.preventDefault();
+    state.cfg.colorCorrect = !state.cfg.colorCorrect;
+    render({keepScroll:true});
+  }
+}, false);
+
+/* 拖拽上传：拖拽悬停时边框高亮、文案变更 */
+document.addEventListener('dragover', function(ev){
+  var z = ev.target.closest ? ev.target.closest('#dropZone') : null;
+  if (z){ if (ev.preventDefault) ev.preventDefault(); z.classList.add('hot'); }
+}, false);
+document.addEventListener('dragleave', function(ev){
+  var z = ev.target.closest ? ev.target.closest('#dropZone') : null;
+  if (z) z.classList.remove('hot');
+}, false);
+document.addEventListener('drop', function(ev){
+  var z = ev.target.closest ? ev.target.closest('#dropZone') : null;
+  if (z){
+    if (ev.preventDefault) ev.preventDefault();
+    z.classList.remove('hot');
+    addFilesToQueue(3, false);
+  }
+}, false);
+
+/* 哈希路由 */
+if (window.addEventListener){
+  window.addEventListener('hashchange', function(){
+    var r = routeFromHash();
+    if (r !== state.route){
+      state.route = r;
+      render();
+    }
+  });
+}
+
+/* ---------- 初始化 ---------- */
+function init(){
+  var r = routeFromHash();
+  state.route = (r && VIEWS[r]) ? r : 'home';
+  render();
+  if (window.__FEEDBACK_PROBE) window.__FEEDBACK_PROBE(state);
+}
+if (typeof document !== 'undefined' && document.getElementById){
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+{
+ "seed": 20260921,
+ "val_ratio": 0.1,
+ "test_ratio": 0.1,
+ "min_per_split": 2,
+ "num_classes": 23,
+ "per_class": {
+  "fish_1": {
+   "class_index": 0,
+   "cn_name": "网纹宅泥鱼",
+   "sci_name": "Dascyllus reticulatus",
+   "total": 12110,
+   "train": 9688,
+   "val": 1211,
+   "test": 1211
+  },
+  "fish_2": {
+   "class_index": 1,
+   "cn_name": "迪克氏固曲齿鲷",
+   "sci_name": "Plectroglyphidodon dickii",
+   "total": 2681,
+   "train": 2145,
+   "val": 268,
+   "test": 268
+  },
+  "fish_3": {
+   "class_index": 2,
+   "cn_name": "长棘光鳃鱼",
+   "sci_name": "Chromis chrysura",
+   "total": 3591,
+   "train": 2873,
+   "val": 359,
+   "test": 359
+  },
+  "fish_4": {
+   "class_index": 3,
+   "cn_name": "克氏双锯鱼",
+   "sci_name": "Amphiprion clarkii",
+   "total": 4047,
+   "train": 3237,
+   "val": 405,
+   "test": 405
+  },
+  "fish_5": {
+   "class_index": 4,
+   "cn_name": "弓月蝴蝶鱼",
+   "sci_name": "Chaetodon lunulatus",
+   "total": 2532,
+   "train": 2026,
+   "val": 253,
+   "test": 253
+  },
+  "fish_6": {
+   "class_index": 5,
+   "cn_name": "川纹蝴蝶鱼",
+   "sci_name": "Chaetodon trifascialis",
+   "total": 188,
+   "train": 150,
+   "val": 19,
+   "test": 19
+  },
+  "fish_7": {
+   "class_index": 6,
+   "cn_name": "康德锯鳞鱼",
+   "sci_name": "Myripristis kuntee",
+   "total": 448,
+   "train": 358,
+   "val": 45,
+   "test": 45
+  },
+  "fish_8": {
+   "class_index": 7,
+   "cn_name": "双斑刺尾鱼",
+   "sci_name": "Acanthurus nigrofuscus",
+   "total": 216,
+   "train": 172,
+   "val": 22,
+   "test": 22
+  },
+  "fish_9": {
+   "class_index": 8,
+   "cn_name": "横带粗唇鱼",
+   "sci_name": "Hemigymnus fasciatus",
+   "total": 239,
+   "train": 191,
+   "val": 24,
+   "test": 24
+  },
+  "fish_10": {
+   "class_index": 9,
+   "cn_name": "莎姆金鳞鱼",
+   "sci_name": "Neoniphon sammara",
+   "total": 297,
+   "train": 237,
+   "val": 30,
+   "test": 30
+  },
+  "fish_11": {
+   "class_index": 10,
+   "cn_name": "五带豆娘鱼",
+   "sci_name": "Abudefduf vaigiensis",
+   "total": 96,
+   "train": 76,
+   "val": 10,
+   "test": 10
+  },
+  "fish_12": {
+   "class_index": 11,
+   "cn_name": "黑马鞍鲀",
+   "sci_name": "Canthigaster valentini",
+   "total": 145,
+   "train": 117,
+   "val": 14,
+   "test": 14
+  },
+  "fish_13": {
+   "class_index": 12,
+   "cn_name": "摩鹿加雀鲷",
+   "sci_name": "Pomacentrus moluccensis",
+   "total": 179,
+   "train": 143,
+   "val": 18,
+   "test": 18
+  },
+  "fish_14": {
+   "class_index": 13,
+   "cn_name": "黑三角倒吊鱼",
+   "sci_name": "Zebrasoma scopas",
+   "total": 88,
+   "train": 70,
+   "val": 9,
+   "test": 9
+  },
+  "fish_15": {
+   "class_index": 14,
+   "cn_name": "黑鳍粗唇鱼",
+   "sci_name": "Hemigymnus melapterus",
+   "total": 40,
+   "train": 32,
+   "val": 4,
+   "test": 4
+  },
+  "fish_16": {
+   "class_index": 15,
+   "cn_name": "黄足笛鲷",
+   "sci_name": "Lutjanus fulvus",
+   "total": 204,
+   "train": 164,
+   "val": 20,
+   "test": 20
+  },
+  "fish_17": {
+   "class_index": 16,
+   "cn_name": "双线眶棘鲈",
+   "sci_name": "Scolopsis bilineata",
+   "total": 47,
+   "train": 37,
+   "val": 5,
+   "test": 5
+  },
+  "fish_18": {
+   "class_index": 17,
+   "cn_name": "鹦嘴鱼科",
+   "sci_name": "Scaridae",
+   "total": 54,
+   "train": 44,
+   "val": 5,
+   "test": 5
+  },
+  "fish_19": {
+   "class_index": 18,
+   "cn_name": "黑缘单鳍鱼",
+   "sci_name": "Pempheris vanicolensis",
+   "total": 27,
+   "train": 21,
+   "val": 3,
+   "test": 3
+  },
+  "fish_20": {
+   "class_index": 19,
+   "cn_name": "镰鱼",
+   "sci_name": "Zanclus cornutus",
+   "total": 19,
+   "train": 15,
+   "val": 2,
+   "test": 2
+  },
+  "fish_21": {
+   "class_index": 20,
+   "cn_name": "黑嘴雀鲷",
+   "sci_name": "Neoglyphidodon nigroris",
+   "total": 14,
+   "train": 10,
+   "val": 2,
+   "test": 2
+  },
+  "fish_22": {
+   "class_index": 21,
+   "cn_name": "黄纹炮弹鱼",
+   "sci_name": "Balistapus undulatus",
+   "total": 39,
+   "train": 31,
+   "val": 4,
+   "test": 4
+  },
+  "fish_23": {
+   "class_index": 22,
+   "cn_name": "褐蓝子鱼",
+   "sci_name": "Siganus fuscescens",
+   "total": 23,
+   "train": 19,
+   "val": 2,
+   "test": 2
+  }
+ },
+ "totals": {
+  "train": 21856,
+  "val": 2734,
+  "test": 2734,
+  "all": 27324
+ }
+}

@@ -1,0 +1,308 @@
+{
+ "started_at": "2026-09-21 14:29:24",
+ "base": "http://127.0.0.1:8000",
+ "frontend": "http://127.0.0.1:5180",
+ "samples": 25,
+ "topology": {
+  "cors": {
+   "http://localhost:5180": "http://localhost:5180",
+   "http://127.0.0.1:5180": "http://127.0.0.1:5180",
+   "http://localhost:5173": "http://localhost:5173"
+  },
+  "health": {
+   "status": "ok",
+   "app": "海瞳鱼鉴 SeaPupil",
+   "version": "1.0.0",
+   "db_pragmas": {
+    "foreign_keys": 1,
+    "journal_mode": "wal",
+    "synchronous": 1,
+    "busy_timeout": 15000
+   },
+   "model": {
+    "ready": true,
+    "load_error": null,
+    "ckpt": "E:\\基于CNN的海洋鱼类图像分类系统\\ml\\models\\M1_main_224\\best.pt",
+    "ckpt_exists": true,
+    "num_classes": 23,
+    "img_size": 224,
+    "device": "cuda",
+    "model_version": "20260921",
+    "trained_epoch": 11,
+    "trained_metrics": {
+     "accuracy": 0.997074,
+     "macro_precision": 0.997378,
+     "macro_recall": 0.96191,
+     "macro_f1": 0.975185,
+     "weighted_f1": 0.996981,
+     "per_class_f1": [
+      0.997938,
+      0.998138,
+      0.995804,
+      1.0,
+      0.996063,
+      1.0,
+      1.0,
+      0.954545,
+      1.0,
+      1.0,
+      1.0,
+      0.962963,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.666667,
+      0.857143,
+      1.0
+     ],
+     "per_class_precision": [
+      0.996705,
+      0.996283,
+      1.0,
+      1.0,
+      0.992157,
+      1.0,
+      1.0,
+      0.954545,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "per_class_recall": [
+      0.999174,
+      1.0,
+      0.991643,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.954545,
+      1.0,
+      1.0,
+      1.0,
+      0.928571,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.5,
+      0.75,
+      1.0
+     ],
+     "per_class_support": [
+      1211,
+      268,
+      359,
+      405,
+      253,
+      19,
+      45,
+      22,
+      24,
+      30,
+      10,
+      14,
+      18,
+      9,
+      4,
+      20,
+      5,
+      5,
+      3,
+      2,
+      2,
+      4,
+      2
+     ],
+     "macro_f1_over_present_classes": 0.975185
+    }
+   }
+  }
+ },
+ "admin_login": true,
+ "guest": {
+  "session": "acc-guest-177501",
+  "image_id": "66869553-68e8-4a8c-a717-8eef6da62f65",
+  "sample": {
+   "class_index": 0,
+   "cn_name": "网纹宅泥鱼",
+   "confidence": 0.925774,
+   "duration_ms": 19,
+   "model_version": "20260921",
+   "top5": [
+    {
+     "rank": 1,
+     "cn_name": "网纹宅泥鱼",
+     "confidence": 0.925774
+    },
+    {
+     "rank": 2,
+     "cn_name": "横带粗唇鱼",
+     "confidence": 0.004628
+    },
+    {
+     "rank": 3,
+     "cn_name": "镰鱼",
+     "confidence": 0.004351
+    },
+    {
+     "rank": 4,
+     "cn_name": "黄纹炮弹鱼",
+     "confidence": 0.004176
+    },
+    {
+     "rank": 5,
+     "cn_name": "长棘光鳃鱼",
+     "confidence": 0.003682
+    }
+   ]
+  }
+ },
+ "user": {
+  "username": "acc730791",
+  "password": "Passw0rd1",
+  "user_id": 8,
+  "images": [
+   "0166544e-4ec3-4f5c-b034-f4d66b93621e",
+   "34c18b7f-231e-4a46-9d92-606d583e8c9b",
+   "01300034-5359-4a19-ba40-593574c4d10b",
+   "3d222b21-0f81-4912-ad18-fdc285e60cf7"
+  ],
+  "recognize_wall_ms": 62.8,
+  "server_duration_ms": 18,
+  "server_proc_ms": 42.2
+ },
+ "perf": {
+  "user_id": 9,
+  "images": [
+   "8e340119-8a12-4566-a92f-662038bd694e",
+   "0e1076cf-affd-4077-ae18-efa2834c2628",
+   "2cc13ddd-d6c8-477f-a94f-d8617cf9e2e0",
+   "59cfa4e0-97fd-44a0-b1b0-bdb1ea536255",
+   "a504e202-638f-4a21-b31b-4e26bdfa22d0",
+   "a55f6f4b-9309-4f17-b97e-cdc39befcaac",
+   "a2b217e5-f23d-4673-81ee-310971988654",
+   "1f7b78bb-3381-4774-afeb-8744b6ca6dc3",
+   "c356c207-65a5-49cc-ac1b-1575a245971a",
+   "f4744f7d-ffec-461f-b001-de4e08cd3cbd",
+   "68312878-4e5f-4752-9f5b-53e436a53238",
+   "911d0da0-fa93-4522-9317-231a8ca02b37",
+   "e4144916-9b02-4718-ae7f-5cb5627f0b32",
+   "6dd31926-1b4b-4a51-8d60-67ab237bcd8d",
+   "41e73aeb-a566-4d2b-8ed5-0b757e27c693",
+   "b730128b-7d3a-4b34-b921-db380032ea8b",
+   "3e0c7aeb-6b1f-4bab-b4b3-323b2237c5be",
+   "369260f1-a461-4b87-98d9-62da620348c9",
+   "f4c984bb-c676-46eb-9d5d-f63fd7b9fd98",
+   "28132d79-c22c-4928-9bde-82b1d5c4bc77",
+   "5b1b804e-6178-4d20-a553-d60adbdece40",
+   "c9641391-491e-48d3-8a95-d306037606d3",
+   "be63362d-d784-4250-99bd-b3e8a5b91f77",
+   "31116dbe-471d-4c57-ace8-d2259b6e95c4",
+   "586ff39d-af4b-4696-ae98-e03c977d8e82"
+  ],
+  "samples": 25,
+  "hits": 25,
+  "upload": {
+   "n": 25,
+   "p50": 40.1,
+   "p95": 49.0,
+   "max": 57.5,
+   "min": 21.4,
+   "mean": 38.7
+  },
+  "upload_server": {
+   "n": 25,
+   "p50": 21.4,
+   "p95": 25.6,
+   "max": 31.8,
+   "min": 15.8,
+   "mean": 21.5
+  },
+  "recognize_client": {
+   "n": 25,
+   "p50": 52.6,
+   "p95": 69.2,
+   "max": 76.8,
+   "min": 29.9,
+   "mean": 52.3
+  },
+  "recognize_server": {
+   "n": 25,
+   "p50": 38.8,
+   "p95": 43.7,
+   "max": 50.6,
+   "min": 26.9,
+   "mean": 37.3
+  },
+  "preprocess_plus_infer": {
+   "n": 25,
+   "p50": 19.0,
+   "p95": 21.0,
+   "max": 22.0,
+   "min": 18.0,
+   "mean": 18.8
+  },
+  "e2e": {
+   "n": 25,
+   "p50": 90.8,
+   "p95": 109.7,
+   "max": 134.3,
+   "min": 63.8,
+   "mean": 90.9
+  },
+  "stage_bench": {
+   "device": "cuda",
+   "n": 25,
+   "preprocess_ms": {
+    "n": 25,
+    "p50": 2.2,
+    "p95": 3.5,
+    "max": 3.5,
+    "min": 1.4,
+    "mean": 2.3
+   },
+   "forward_ms": {
+    "n": 25,
+    "p50": 5.8,
+    "p95": 8.6,
+    "max": 58.4,
+    "min": 2.9,
+    "mean": 8.0
+   }
+  }
+ },
+ "cleanup": {
+  "removed_users": 2,
+  "removed_images": 30,
+  "failed": []
+ },
+ "finished_at": "2026-09-21 14:32:04",
+ "passed": 83,
+ "failed": 0,
+ "failures": [],
+ "notes": [
+  "管理员口令命中：Admin@12345"
+ ]
+}

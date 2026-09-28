@@ -1,0 +1,122 @@
+/* ============================================================================
+ * 海瞳鱼鉴 · 排版基线与全局重置
+ * 依据：D9 §3.7 字号阶梯、§3.6 数字排版、§8.3 无障碍
+ * ========================================================================== */
+
+/* 全部重置规则包进 @layer base —— 使其优先级低于 Tailwind utilities，
+ * 这样 globals.css 里 base.css 可以安全地提前 @import（满足 PostCSS 的
+ * @import 必须置顶要求），同时工具类仍能覆盖重置样式。 */
+@layer base {
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  /* 防移动端横向溢出（原型实测缺陷，勿删） */
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px; /* 正文基准 */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* D-01 等宽数字：防表格与条形图中数字跳动 */
+  font-variant-numeric: tabular-nums;
+}
+
+/* 全站最小字号 11px，仅允许用于 .brand-sub 与 .thumb-bad 两处（D9 §3.7） */
+/* 免责声明字号不得低于 12px（PRD §4.4.4 强制） */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 600; /* 全站标题统一 600 */
+  color: var(--text);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--primary-600);
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---- 焦点可见性（D9 §8.3.3 键盘可操作） ----
+ * 边框令牌对比度不足以单独指示焦点，故必须
+ * 「--primary 边框色 + --ring 焦点环」叠加使用。
+ */
+:focus-visible {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: var(--ring);
+  border-radius: var(--radius-sm);
+}
+
+/* 横向溢出防护：表格容器允许内部滚动 */
+.scroll-x {
+  overflow-x: auto;
+}
+
+/* 屏幕阅读器专用（跳过导航链接、图标按钮的可访问名） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 跳过导航链接（键盘用户第一个 Tab 可达，D9 §8.3.3） */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 300;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+}
+
+/* 打印样式（D9 §8.3.7）：隐藏交互元素 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+}

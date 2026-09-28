@@ -1,0 +1,33 @@
+# ============================================================
+# 海瞳鱼鉴 SeaPupil · 后端 Python 依赖
+# Python 3.12+（实测 3.12/3.13 均可）
+# 安装：pip install -r requirements.txt
+#
+# 【GPU 用户注意】torch / torchvision 需按你的 CUDA 版本单独安装，
+# 下方为 CPU 兜底版本声明（任何环境都能装上）；GPU 安装命令见 README「环境准备」。
+# ============================================================
+
+# ---- Web 框架 ----
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+starlette>=0.36
+
+# ---- 数据与校验 ----
+pydantic>=2.6
+pydantic-settings>=2.2
+sqlalchemy>=2.0
+
+# ---- 深度学习（GPU 版安装方式见 README） ----
+torch>=2.0
+torchvision>=0.15
+numpy>=1.26
+pillow>=10.0
+
+# ---- 认证与安全 ----
+python-jose[cryptography]>=3.3
+bcrypt>=4.0
+
+# ---- 测试（可选，跑 tests/ 需要） ----
+pytest>=8.0
+httpx>=0.27

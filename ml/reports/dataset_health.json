@@ -1,0 +1,234 @@
+{
+ "sampled_total": 3715,
+ "size_range": {
+  "w": [
+   25,
+   428
+  ],
+  "h": [
+   27,
+   401
+  ]
+ },
+ "short_side_median": 88,
+ "n_short_lt_224": 3689,
+ "pct_short_lt_224": 99.3,
+ "n_short_lt_112": 2840,
+ "pct_short_lt_112": 76.45,
+ "modes": {
+  "RGB": 3715
+ },
+ "formats": {
+  "PNG": 3715
+ },
+ "verdict": "多数图像短边小于 224，缩放至上采样，精度上限受压",
+ "per_class": {
+  "fish_1": {
+   "sampled": 300,
+   "w_min": 47,
+   "w_max": 267,
+   "h_min": 38,
+   "h_max": 220,
+   "short_min": 38,
+   "n_shorter_than_224": 300
+  },
+  "fish_2": {
+   "sampled": 300,
+   "w_min": 43,
+   "w_max": 224,
+   "h_min": 43,
+   "h_max": 183,
+   "short_min": 43,
+   "n_shorter_than_224": 300
+  },
+  "fish_3": {
+   "sampled": 300,
+   "w_min": 45,
+   "w_max": 239,
+   "h_min": 44,
+   "h_max": 197,
+   "short_min": 44,
+   "n_shorter_than_224": 300
+  },
+  "fish_4": {
+   "sampled": 300,
+   "w_min": 48,
+   "w_max": 216,
+   "h_min": 48,
+   "h_max": 196,
+   "short_min": 48,
+   "n_shorter_than_224": 300
+  },
+  "fish_5": {
+   "sampled": 300,
+   "w_min": 61,
+   "w_max": 167,
+   "h_min": 63,
+   "h_max": 188,
+   "short_min": 61,
+   "n_shorter_than_224": 300
+  },
+  "fish_6": {
+   "sampled": 188,
+   "w_min": 67,
+   "w_max": 232,
+   "h_min": 62,
+   "h_max": 228,
+   "short_min": 62,
+   "n_shorter_than_224": 188
+  },
+  "fish_7": {
+   "sampled": 300,
+   "w_min": 25,
+   "w_max": 144,
+   "h_min": 27,
+   "h_max": 130,
+   "short_min": 25,
+   "n_shorter_than_224": 300
+  },
+  "fish_8": {
+   "sampled": 216,
+   "w_min": 62,
+   "w_max": 428,
+   "h_min": 49,
+   "h_max": 401,
+   "short_min": 49,
+   "n_shorter_than_224": 209
+  },
+  "fish_9": {
+   "sampled": 239,
+   "w_min": 70,
+   "w_max": 279,
+   "h_min": 64,
+   "h_max": 221,
+   "short_min": 64,
+   "n_shorter_than_224": 239
+  },
+  "fish_10": {
+   "sampled": 297,
+   "w_min": 80,
+   "w_max": 207,
+   "h_min": 74,
+   "h_max": 143,
+   "short_min": 74,
+   "n_shorter_than_224": 297
+  },
+  "fish_11": {
+   "sampled": 96,
+   "w_min": 54,
+   "w_max": 227,
+   "h_min": 51,
+   "h_max": 240,
+   "short_min": 51,
+   "n_shorter_than_224": 96
+  },
+  "fish_12": {
+   "sampled": 145,
+   "w_min": 67,
+   "w_max": 240,
+   "h_min": 66,
+   "h_max": 187,
+   "short_min": 66,
+   "n_shorter_than_224": 145
+  },
+  "fish_13": {
+   "sampled": 179,
+   "w_min": 63,
+   "w_max": 327,
+   "h_min": 66,
+   "h_max": 275,
+   "short_min": 63,
+   "n_shorter_than_224": 172
+  },
+  "fish_14": {
+   "sampled": 88,
+   "w_min": 63,
+   "w_max": 155,
+   "h_min": 61,
+   "h_max": 164,
+   "short_min": 61,
+   "n_shorter_than_224": 88
+  },
+  "fish_15": {
+   "sampled": 40,
+   "w_min": 69,
+   "w_max": 291,
+   "h_min": 69,
+   "h_max": 218,
+   "short_min": 69,
+   "n_shorter_than_224": 40
+  },
+  "fish_16": {
+   "sampled": 204,
+   "w_min": 69,
+   "w_max": 356,
+   "h_min": 74,
+   "h_max": 253,
+   "short_min": 69,
+   "n_shorter_than_224": 198
+  },
+  "fish_17": {
+   "sampled": 47,
+   "w_min": 75,
+   "w_max": 179,
+   "h_min": 69,
+   "h_max": 123,
+   "short_min": 69,
+   "n_shorter_than_224": 47
+  },
+  "fish_18": {
+   "sampled": 54,
+   "w_min": 72,
+   "w_max": 123,
+   "h_min": 68,
+   "h_max": 107,
+   "short_min": 68,
+   "n_shorter_than_224": 54
+  },
+  "fish_19": {
+   "sampled": 27,
+   "w_min": 95,
+   "w_max": 264,
+   "h_min": 88,
+   "h_max": 204,
+   "short_min": 88,
+   "n_shorter_than_224": 27
+  },
+  "fish_20": {
+   "sampled": 19,
+   "w_min": 72,
+   "w_max": 351,
+   "h_min": 72,
+   "h_max": 356,
+   "short_min": 72,
+   "n_shorter_than_224": 13
+  },
+  "fish_21": {
+   "sampled": 14,
+   "w_min": 87,
+   "w_max": 156,
+   "h_min": 73,
+   "h_max": 122,
+   "short_min": 73,
+   "n_shorter_than_224": 14
+  },
+  "fish_22": {
+   "sampled": 39,
+   "w_min": 72,
+   "w_max": 214,
+   "h_min": 64,
+   "h_max": 227,
+   "short_min": 64,
+   "n_shorter_than_224": 39
+  },
+  "fish_23": {
+   "sampled": 23,
+   "w_min": 92,
+   "w_max": 144,
+   "h_min": 71,
+   "h_max": 100,
+   "short_min": 71,
+   "n_shorter_than_224": 23
+  }
+ }
+}

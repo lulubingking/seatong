@@ -1,0 +1,37 @@
+{
+  "name": "seatong-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "海瞳鱼鉴 SeaPupil 前端 —— 基于 CNN 的海洋鱼类图像分类系统",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint:tokens": "node scripts/lint-tokens.mjs",
+    "contract:check": "node scripts/contract-check.mjs",
+    "route:smoke": "node scripts/route-smoke.mjs",
+    "e2e:flow": "node scripts/e2e-flow.mjs",
+    "selfcheck": "npm run typecheck && npm run lint:tokens && npm run contract:check && npm run route:smoke"
+  },
+  "dependencies": {
+    "antd": "^5.22.2",
+    "axios": "^1.7.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.3"
+  }
+}
